@@ -12,7 +12,7 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # The ID and range of a sample spreadsheet.
 SPREADSHEET_ID = '1n4nkoIfEo2_jdrAfykvhABOKlznIOft_3MZXx8ntXM4'
-DATA_RANGE = 'Sheet1!A1:C5'
+DATA_RANGE = 'Sheet1!$A$1:$YY'
 
 
 def get_db_values():
@@ -44,13 +44,10 @@ def get_db_values():
                                 range=DATA_RANGE).execute()
     values = result.get('values', [])
 
-    return values
+    return values[0], values[1:]
 
 
-def print_data(sheet_data, w):
-    sheet_data = get_db_values()
-    headers = sheet_data[0]
-    values = sheet_data[1:]
+def print_data(headers, values, w):
 
     format_string = '{:>' + str(w) + '}'
 
@@ -58,7 +55,7 @@ def print_data(sheet_data, w):
         print('No data found.')
     else:
         for col in headers:
-            print(format_string.format(col), end="")
+            print(format_string.format(col + ":"), end="")
         print("")
         for row in values:
             for col in row:
@@ -68,8 +65,8 @@ def print_data(sheet_data, w):
 
 
 def main():
-    sheet_data = get_db_values()
-    print_data(sheet_data, 10)
+    headers, values = get_db_values()
+    print_data(headers, values, 10)
     return
 
 
