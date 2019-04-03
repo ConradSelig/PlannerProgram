@@ -4,6 +4,7 @@ import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+# pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 
 
 # If modifying these scopes, delete the file token.pickle.
@@ -11,7 +12,7 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # The ID and range of a sample spreadsheet.
 SPREADSHEET_ID = '1n4nkoIfEo2_jdrAfykvhABOKlznIOft_3MZXx8ntXM4'
-DATA_RANGE = 'Sheet1!A2:B5'
+DATA_RANGE = 'Sheet1!A1:C5'
 
 
 def get_db_values():
@@ -46,16 +47,31 @@ def get_db_values():
     return values
 
 
-def main():
+def print_data(sheet_data, w):
+    sheet_data = get_db_values()
+    headers = sheet_data[0]
+    values = sheet_data[1:]
 
-    values = get_db_values()
+    format_string = '{:>' + str(w) + '}'
 
     if not values:
         print('No data found.')
     else:
-        print('Name, Sex:')
+        for col in headers:
+            print(format_string.format(col), end="")
+        print("")
         for row in values:
-            print(row[0], row[1])
+            for col in row:
+                print(format_string.format(col), end="")
+            print("")
+    return
+
+
+def main():
+    sheet_data = get_db_values()
+    print_data(sheet_data, 10)
+    return
+
 
 if __name__ == '__main__':
     main()
