@@ -8,7 +8,7 @@ from google.auth.transport.requests import Request
 
 
 # If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 # The ID and range of a sample spreadsheet.
 SPREADSHEET_ID = '1n4nkoIfEo2_jdrAfykvhABOKlznIOft_3MZXx8ntXM4'
@@ -44,7 +44,7 @@ def get_db_values():
                                 range=DATA_RANGE).execute()
     values = result.get('values', [])
 
-    return values[0], values[1:]
+    return values[0], values[1:], service
 
 
 def print_data(headers, values, w):
@@ -64,8 +64,21 @@ def print_data(headers, values, w):
     return
 
 
+def write_cells(range, values, service):
+
+    body = {
+        "values": values
+    }
+    result = service.spreadsheets().values().update(
+        spreadsheetId=SPREADSHEET_ID, range="Sheet1!" + range,
+        valueInputOption='RAW', body=body).execute()
+    print('{0} cells updated.'.format(result.get('updatedCells')))
+
+    return
+
+
 def main():
-    headers, values = get_db_values()
+    headers, values, service = get_db_values()
     print_data(headers, values, 10)
     return
 
