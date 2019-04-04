@@ -15,6 +15,51 @@ SPREADSHEET_ID = '1n4nkoIfEo2_jdrAfykvhABOKlznIOft_3MZXx8ntXM4'
 DATA_RANGE = 'Sheet1!$A$1:$YY'
 
 
+class Event:
+    title = ""
+    subtitle = ""
+    description = ""
+    event_date = ""
+    creation_date = ""
+    last_modified_date = ""
+    time = ""
+    duration = ""
+    location = ""
+    attachments = ""
+    path = ""
+    contacts = ""
+    number = ""
+    tags = ""
+    todo = ""
+    complete = ""
+
+    def __init__(self, title="", subtitle="", description="", event_date="", creation_date="",
+                 last_modified_date="", time="", duration="", location="", attachments="", path="",
+                 contacts="", number="", tags="", todo="", complete=""):
+        self.title = title
+        self.subtitle = subtitle
+        self.description = description
+        self.event_date = event_date
+        self.creation_date = creation_date
+        self.last_modified_date = last_modified_date
+        self.time = time
+        self.duration = duration
+        self.location = location
+        self.attachments = attachments
+        self.path = path
+        self.contacts = contacts
+        self.number = number
+        self.tags = tags
+        self.todo = todo
+        self.complete = complete
+
+    def print(self):
+        for attr in dir(Event):
+            if not attr.startswith("__") and not callable(getattr(Event, attr)):
+                print(attr, getattr(self, attr))
+                # print(str(getattr(self, attr)) + ", ", end="")
+
+
 def get_db_values():
 
     creds = None
@@ -78,8 +123,12 @@ def write_cells(range, values, service):
 
 
 def main():
-    headers, values, service = get_db_values()
-    print_data(headers, values, 10)
+    # headers, values, service = get_db_values()
+    # print_data(headers, values, 10)
+
+    my_event = Event()
+    my_event.print()
+
     return
 
 
