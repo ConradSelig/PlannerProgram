@@ -2,6 +2,7 @@ from __future__ import print_function
 import pickle
 import inspect
 import os.path
+from datetime import datetime
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -20,6 +21,7 @@ class Event:
     title = ""
     subtitle = ""
     description = ""
+    text = ""
     event_date = ""
     creation_date = ""
     last_modified_date = ""
@@ -35,14 +37,15 @@ class Event:
     complete = ""
     attrs = []
 
-    def __init__(self, title="", subtitle="", description="", event_date="", creation_date="",
+    def __init__(self, title="", subtitle="", description="", text="", event_date="", creation_date="",
                  last_modified_date="", time="", duration="", location="", attachments="", path="",
                  contacts="", number="", tags="", todo="", complete=""):
-        self.attrs = [a for a in inspect.getmembers(Event, lambda a: not (inspect.isroutine(a)))
-                      if not (a[0].startswith("__") and a[0].endswith("__")) and a[0] != "attrs"]
+        self.attrs = ["title", "subtitle", "description", "text", "event_date", "creation_date", "last_modified_date",
+                      "time", "duration", "location", "attachments", "path", "contacts", "number", "tags", "todo", "complete"]
         self.title = title
         self.subtitle = subtitle
         self.description = description
+        self.text = text
         self.event_date = event_date
         self.creation_date = creation_date
         self.last_modified_date = last_modified_date
@@ -57,9 +60,20 @@ class Event:
         self.todo = todo
         self.complete = complete
 
-    def print(self):
+    def print_all(self):
         for attr in self.attrs:
-            print(attr[0], " = ", getattr(self, attr[0]))
+            print(attr, " = ", getattr(self, attr))
+
+    def print_filled(self):
+        for attr in self.attrs:
+            if getattr(self, attr) != "":
+                print(attr, " = ", getattr(self, attr))
+
+    def get_values(self):
+        values = []
+        for attr in self.attrs:
+            values.append(getattr(self, attr))
+        return values
 
 
 def get_db_values():
@@ -124,12 +138,25 @@ def write_cells(range, values, service):
     return
 
 
+def write_event(num_file_events, event, service):
+    body = {
+        "values": [event.get_values()]
+    }
+    cell_range = "A" + str(num_file_events + 2) + ":Q" + str(num_file_events + 2)
+    result = service.spreadsheets().values().update(
+        spreadsheetId=SPREADSHEET_ID, range="Sheet1!" + cell_range,
+        valueInputOption='RAW', body=body).execute()
+    print('{0} cells updated.'.format(result.get('updatedCells')))
+    return
+
+
 def main():
-    # headers, values, service = get_db_values()
+    header, values, service = get_db_values()
     # print_data(headers, values, 10)
 
-    my_event = Event(title="Hello Event")
-    my_event.print()
+    my_event = Event(title="Test 3", description="This is the third event", creation_date=str(datetime.now()))
+    my_event.print_filled()
+    write_event(len(values), my_event, service)
 
     return
 
