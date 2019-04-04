@@ -1,5 +1,6 @@
 from __future__ import print_function
 import pickle
+import inspect
 import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -32,6 +33,7 @@ class Event:
     tags = ""
     todo = ""
     complete = ""
+    attrs = []
 
     def __init__(self, title="", subtitle="", description="", event_date="", creation_date="",
                  last_modified_date="", time="", duration="", location="", attachments="", path="",
@@ -52,12 +54,13 @@ class Event:
         self.tags = tags
         self.todo = todo
         self.complete = complete
+        self.attrs = inspect.getmembers(Event, lambda a:not(inspect.isroutine(a)))
+        self.attrs = [a for a in self.attrs if not(a[0].startswith("__") and a[0].endswith("__"))]
 
     def print(self):
-        for attr in dir(Event):
-            if not attr.startswith("__") and not callable(getattr(Event, attr)):
-                print(attr, getattr(self, attr))
-                # print(str(getattr(self, attr)) + ", ", end="")
+        for attr in self.attrs:
+            if attr[0] != "attrs":
+                print(attr[0], " = ", getattr(self, attr[0]))
 
 
 def get_db_values():
@@ -126,7 +129,7 @@ def main():
     # headers, values, service = get_db_values()
     # print_data(headers, values, 10)
 
-    my_event = Event()
+    my_event = Event(title="Hello Event")
     my_event.print()
 
     return
