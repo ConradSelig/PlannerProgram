@@ -38,6 +38,8 @@ class Event:
     def __init__(self, title="", subtitle="", description="", event_date="", creation_date="",
                  last_modified_date="", time="", duration="", location="", attachments="", path="",
                  contacts="", number="", tags="", todo="", complete=""):
+        self.attrs = [a for a in inspect.getmembers(Event, lambda a: not (inspect.isroutine(a)))
+                      if not (a[0].startswith("__") and a[0].endswith("__")) and a[0] != "attrs"]
         self.title = title
         self.subtitle = subtitle
         self.description = description
@@ -54,13 +56,10 @@ class Event:
         self.tags = tags
         self.todo = todo
         self.complete = complete
-        self.attrs = inspect.getmembers(Event, lambda a:not(inspect.isroutine(a)))
-        self.attrs = [a for a in self.attrs if not(a[0].startswith("__") and a[0].endswith("__"))]
 
     def print(self):
         for attr in self.attrs:
-            if attr[0] != "attrs":
-                print(attr[0], " = ", getattr(self, attr[0]))
+            print(attr[0], " = ", getattr(self, attr[0]))
 
 
 def get_db_values():
