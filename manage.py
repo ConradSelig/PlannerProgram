@@ -1,7 +1,9 @@
 from __future__ import print_function
 import pickle
+import copy
 import inspect
 import os.path
+from random import randint
 from datetime import datetime
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -18,37 +20,21 @@ DATA_RANGE = 'Sheet1!$A$1:$YY'
 
 
 class Event:
-    title = ""
-    subtitle = ""
-    description = ""
-    text = ""
-    event_date = ""
-    creation_date = ""
-    last_modified_date = ""
-    time = ""
-    duration = ""
-    location = ""
-    attachments = ""
-    path = ""
-    contacts = ""
-    number = ""
-    tags = ""
-    todo = ""
-    complete = ""
-    attrs = []
 
-    def __init__(self, title="", subtitle="", description="", text="", event_date="", creation_date="",
-                 last_modified_date="", time="", duration="", location="", attachments="", path="",
+    def __init__(self, title="", subtitle="", description="", text="", event_date="",
+                 last_modified_date="", due_date="", time="", duration="", location="", attachments="", path="",
                  contacts="", number="", tags="", todo="", complete=""):
         self.attrs = ["title", "subtitle", "description", "text", "event_date", "creation_date", "last_modified_date",
-                      "time", "duration", "location", "attachments", "path", "contacts", "number", "tags", "todo", "complete"]
+                      "due_date", "time", "duration", "location", "attachments", "path", "contacts", "number", "tags",
+                      "todo", "complete", "id"]
         self.title = title
         self.subtitle = subtitle
         self.description = description
         self.text = text
         self.event_date = event_date
-        self.creation_date = creation_date
+        self.creation_date = datetime.now()
         self.last_modified_date = last_modified_date
+        self.due_date = due_date
         self.time = time
         self.duration = duration
         self.location = location
@@ -59,21 +45,47 @@ class Event:
         self.tags = tags
         self.todo = todo
         self.complete = complete
+        self.id = 0
+
+    def __eq__(self, other):
+        local = [getattr(self, key) for key in self.attrs]
+        foreign = [getattr(other, key) for key in self.attrs]
+        print("local =", local)
+        print("foreign =", foreign)
+        return local == foreign
+
+    def build_from_event(self, values):
+        for index, key in enumerate(self.attrs):
+            try:
+                setattr(self, key, values[index])
+            except IndexError:
+                setattr(self, key, "")
+        return
 
     def print_all(self):
         for attr in self.attrs:
             print(attr, " = ", getattr(self, attr))
+        return
 
     def print_filled(self):
         for attr in self.attrs:
             if getattr(self, attr) != "":
                 print(attr, " = ", getattr(self, attr))
+        return
 
     def get_values(self):
         values = []
         for attr in self.attrs:
             values.append(getattr(self, attr))
         return values
+
+    def set_id(self, event_ids):
+        next_id = randint(0, 100000)
+        if next_id not in event_ids:
+            self.id = next_id
+        else:
+            self.set_id(event_ids)
+        return
 
 
 def get_db_values():
@@ -138,11 +150,12 @@ def write_cells(range, values, service):
     return
 
 
-def write_event(num_file_events, event, service):
+def write_event(event_index, event, service):
+    setattr(event, "creation_date", str(getattr(event, "creation_date")))
     body = {
         "values": [event.get_values()]
     }
-    cell_range = "A" + str(num_file_events + 2) + ":Q" + str(num_file_events + 2)
+    cell_range = "A" + str(event_index + 2) + ":S" + str(event_index + 2)
     result = service.spreadsheets().values().update(
         spreadsheetId=SPREADSHEET_ID, range="Sheet1!" + cell_range,
         valueInputOption='RAW', body=body).execute()
@@ -152,11 +165,37 @@ def write_event(num_file_events, event, service):
 
 def main():
     header, values, service = get_db_values()
-    # print_data(headers, values, 10)
+    print_data(header, values, 35)
 
-    my_event = Event(title="Test 3", description="This is the third event", creation_date=str(datetime.now()))
-    my_event.print_filled()
-    write_event(len(values), my_event, service)
+    old_events = []
+    events = []
+
+    for row in values:
+        events.append(Event())
+        old_events.append(Event())
+        events[-1].build_from_event(row)
+        old_events[-1].build_from_event(row)
+
+    print("::", getattr(old_events[0], "id"), getattr(events[0], "id"))
+
+    for index, row in enumerate(values):
+        if getattr(events[index], "id") == "":
+            print("setting id")
+            events[index].set_id([getattr(event, "id") for event in events])
+
+    print("::", getattr(old_events[0], "id"), getattr(events[0], "id"))
+
+    print("---")
+
+    for index, event in enumerate(events):
+        event.print_filled()
+        if old_events[index] != event:
+            print("updating event")
+            write_event(index, event, service)
+        else:
+            print("events are the same")
+
+        print("")
 
     return
 
