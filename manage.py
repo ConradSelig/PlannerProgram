@@ -164,38 +164,27 @@ def write_event(event_index, event, service):
 
 
 def main():
+    # get the database, this fills into a header array, a 2D values array, and a service API value.
     header, values, service = get_db_values()
+    # output the data (formatted)
     print_data(header, values, 35)
 
     old_events = []
     events = []
 
+    # build new and old array, they are identical to start off with. We use this to compare which events changed at
+    # save time to save API calls by only pushing changed events
     for row in values:
         events.append(Event())
         old_events.append(Event())
         events[-1].build_from_event(row)
         old_events[-1].build_from_event(row)
 
-    print("::", getattr(old_events[0], "id"), getattr(events[0], "id"))
-
+    # check for events that did not get assigned an ID number, and generate one for them.
     for index, row in enumerate(values):
         if getattr(events[index], "id") == "":
             print("setting id")
             events[index].set_id([getattr(event, "id") for event in events])
-
-    print("::", getattr(old_events[0], "id"), getattr(events[0], "id"))
-
-    print("---")
-
-    for index, event in enumerate(events):
-        event.print_filled()
-        if old_events[index] != event:
-            print("updating event")
-            write_event(index, event, service)
-        else:
-            print("events are the same")
-
-        print("")
 
     return
 
