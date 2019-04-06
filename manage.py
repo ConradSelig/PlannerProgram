@@ -1,9 +1,9 @@
 from __future__ import print_function
 import pickle
-import copy
-import inspect
+import time
 import os.path
 from random import randint
+from random import shuffle
 from datetime import datetime
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -17,6 +17,8 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 # The ID and range of a sample spreadsheet.
 SPREADSHEET_ID = '1n4nkoIfEo2_jdrAfykvhABOKlznIOft_3MZXx8ntXM4'
 DATA_RANGE = 'Sheet1!$A$1:$YY'
+
+service = ""
 
 
 class Event:
@@ -50,8 +52,6 @@ class Event:
     def __eq__(self, other):
         local = [getattr(self, key) for key in self.attrs]
         foreign = [getattr(other, key) for key in self.attrs]
-        print("local =", local)
-        print("foreign =", foreign)
         return local == foreign
 
     def build_from_event(self, values):
@@ -137,20 +137,20 @@ def print_data(headers, values, w):
     return
 
 
-def write_cells(range, values, service):
+def write_cells(db_range, values):
 
     body = {
         "values": values
     }
     result = service.spreadsheets().values().update(
-        spreadsheetId=SPREADSHEET_ID, range="Sheet1!" + range,
+        spreadsheetId=SPREADSHEET_ID, range="Sheet1!" + db_range,
         valueInputOption='RAW', body=body).execute()
     print('{0} cells updated.'.format(result.get('updatedCells')))
 
     return
 
 
-def write_event(event_index, event, service):
+def write_event(event_index, event):
     setattr(event, "creation_date", str(getattr(event, "creation_date")))
     body = {
         "values": [event.get_values()]
@@ -159,11 +159,25 @@ def write_event(event_index, event, service):
     result = service.spreadsheets().values().update(
         spreadsheetId=SPREADSHEET_ID, range="Sheet1!" + cell_range,
         valueInputOption='RAW', body=body).execute()
-    print('{0} cells updated.'.format(result.get('updatedCells')))
+    print("\n\nEvent Updated: ")
+    event.print_filled()
+    return
+
+
+def update_db(events, old_events):
+    for index, event in enumerate(events):
+        try:
+            if event != old_events[index]:
+                write_event(index, event)
+        except IndexError:
+            write_event(index, event)
+
     return
 
 
 def main():
+    # define service as a global so it does not have to be passed into so many function definitions
+    global service
     # get the database, this fills into a header array, a 2D values array, and a service API value.
     header, values, service = get_db_values()
     # output the data (formatted)
@@ -183,9 +197,23 @@ def main():
     # check for events that did not get assigned an ID number, and generate one for them.
     for index, row in enumerate(values):
         if getattr(events[index], "id") == "":
-            print("setting id")
             events[index].set_id([getattr(event, "id") for event in events])
 
+    # fill with 100 semi-random events
+    '''
+    for i in range(100):
+        print("Building Next Event...", i + 1)
+        events.append(Event(title="Test " + str(i + 1),
+                            todo="T" if randint(0, 1) == 1 else "F",
+                            complete="T" if randint(0, 1) == 1 else "F",
+                            number="" if randint(0, 2) == 1 else randint(0, 10)))
+        events[i].set_id([getattr(event, "id") for event in events])
+        time.sleep(1)
+
+    shuffle(events)
+    '''
+
+    update_db(events, old_events)
     return
 
 
