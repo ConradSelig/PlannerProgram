@@ -24,7 +24,7 @@ service = ""
 class Event:
 
     def __init__(self, title="", subtitle="", description="", text="", event_date="",
-                 last_modified_date="", due_date="", time="", duration="", location="", attachments="", path="",
+                 last_modified_date="", due_date="", in_time="", duration="", location="", attachments="", path="",
                  contacts="", number="", tags="", todo="", complete=""):
         self.attrs = ["title", "subtitle", "description", "text", "event_date", "creation_date", "last_modified_date",
                       "due_date", "time", "duration", "location", "attachments", "path", "contacts", "number", "tags",
@@ -37,7 +37,7 @@ class Event:
         self.creation_date = datetime.now()
         self.last_modified_date = last_modified_date
         self.due_date = due_date
-        self.time = time
+        self.time = in_time
         self.duration = duration
         self.location = location
         self.attachments = attachments
