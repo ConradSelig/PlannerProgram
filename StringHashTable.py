@@ -40,7 +40,7 @@ def main():
 
     table_size = len(strings)
     # fill the hash_map with empty arrays so index errors do not occur
-    hash_map = [[] for i in range(table_size)]
+    hash_map = [[] for _ in range(table_size)]
 
     next_map_value = 0
 
@@ -60,7 +60,7 @@ def main():
         else:
             # add one to the index
             i = next_map_value + 1
-            # while i the table range
+            # while i is in the table range
             while i <= table_size:
                 # if reaching end of table range, reset to start of hash table
                 if i >= table_size:
