@@ -47,7 +47,7 @@ class Event:
         self.tags = tags
         self.todo = todo
         self.complete = complete
-        self.id = 0
+        self.id = -1
 
     def __eq__(self, other):
         local = [getattr(self, key) for key in self.attrs]
@@ -79,13 +79,38 @@ class Event:
             values.append(getattr(self, attr))
         return values
 
-    def set_id(self, event_ids):
-        next_id = randint(0, 100000)
-        if next_id not in event_ids:
-            self.id = next_id
-        else:
-            self.set_id(event_ids)
+    def set_id(self, new_id):
+        self.id = new_id
         return
+
+    def get(self, attr):
+        return getattr(self, attr)
+
+
+class HashMapValue:
+
+    def __init__(self):
+        self.key = ""
+        self.values = []
+
+    def __str__(self):
+        if self.key is not "":
+            return str(self.key) + ": " + str(self.values)
+        else:
+            return "Null: [Null]"
+
+    def set_key(self, key):
+        self.key = key
+
+    def add_val(self, value):
+        self.values.append(value)
+        return
+
+    def get_key(self):
+        return self.key
+
+    def get_values(self):
+        return self.values
 
 
 def get_db_values():
@@ -175,13 +200,69 @@ def update_db(events, old_events):
     return
 
 
+def hash_string(string, table_size):
+    next_map_value = 0
+    # for each character in the string
+    for char in string:
+        # add that characters value to the total
+        next_map_value += ord(char)
+    # mod that value by the table size
+    next_map_value %= table_size
+    # return the generated hash value
+    return next_map_value
+
+
+def build_hash_table(items, key_name):
+
+    print("Buidling Hash Table")
+
+    table_size = len(items)
+    hash_map = [HashMapValue() for _ in range(table_size)]
+
+    # for each string in list
+    for item in items:
+
+        # get the hash value for the next key
+        next_hash_value = hash_string(item.get(key_name), table_size)
+
+        # if the hash value index is available, fill it with the data
+        if hash_map[next_hash_value].get_key() == "":
+            hash_map[next_hash_value].set_key(item.get(key_name))
+            hash_map[next_hash_value].add_val(int(item.get("id")))
+        # else check if they valid key is in that spot, and append the value to that spot
+        elif hash_map[next_hash_value].get_key() == item.get(key_name):
+            hash_map[next_hash_value].add_val(int(item.get("id")))
+        # else an open fill is needed
+        else:
+            # add one to the index
+            i = next_hash_value + 1
+            # while i is in the table range
+            while i <= table_size:
+                # if reaching end of table range, reset to start of hash table
+                if i >= table_size:
+                    i = 0
+                # if the next spot is open, fill it with the data and break from open fill
+                if hash_map[i].get_key() == "":
+                    hash_map[i].set_key(item.get(key_name))
+                    hash_map[i].add_val(int(item.get("id")))
+                    break
+                # else check if the next spots key is the current key, and append the value to that spot, and break
+                elif hash_map[i].get_key() == item.get(key_name):
+                    hash_map[i].add_val(int(item.get("id")))
+                    break
+                # add one to index to check for the next spot
+                i += 1
+
+    return hash_map
+
+
 def main():
     # define service as a global so it does not have to be passed into so many function definitions
     global service
     # get the database, this fills into a header array, a 2D values array, and a service API value.
     header, values, service = get_db_values()
     # output the data (formatted)
-    print_data(header, values, 35)
+    # print_data(header, values, 35)
 
     old_events = []
     events = []
@@ -194,23 +275,37 @@ def main():
         events[-1].build_from_event(row)
         old_events[-1].build_from_event(row)
 
-    # check for events that did not get assigned an ID number, and generate one for them.
-    for index, row in enumerate(values):
-        if getattr(events[index], "id") == "":
-            events[index].set_id([getattr(event, "id") for event in events])
+    for event in events:
+        if event.get("id") == -1:
+            print("Event detected with no ID")
+            break
+    else:
+        print("No missing IDs detected.")
+
+    hash_map = build_hash_table(events, "title")
+    for index, next_hash in enumerate(hash_map):
+        print(index, next_hash)
+
+    lookup_string = " "
+    while lookup_string != "":
+        lookup_string = input("Enter Row Title: ")
+        key_index = hash_string(lookup_string, len(hash_map))
+        while hash_map[key_index].get_key() != lookup_string:
+            key_index += 1
+
+        for ID in hash_map[key_index].get_values():
+            print(events[ID].get("creation_date"))
 
     # fill with 100 semi-random events
     '''
     for i in range(100):
         print("Building Next Event...", i + 1)
-        events.append(Event(title="Test " + str(i + 1),
+        events.append(Event(title="Test " + str(randint(0, i)),
                             todo="T" if randint(0, 1) == 1 else "F",
                             complete="T" if randint(0, 1) == 1 else "F",
                             number="" if randint(0, 2) == 1 else randint(0, 10)))
-        events[i].set_id([getattr(event, "id") for event in events])
-        time.sleep(1)
-
-    shuffle(events)
+        events[i].set_id(i)
+        time.sleep(0.25)
     '''
 
     update_db(events, old_events)
