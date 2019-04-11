@@ -49,7 +49,7 @@ class Event:
         self.complete = complete
         self.id = -1
 
-    def __eq__(self, other):
+    def compare(self, other):
         local = [getattr(self, key) for key in self.attrs]
         foreign = [getattr(other, key) for key in self.attrs]
         return local == foreign
@@ -184,17 +184,17 @@ def write_event(event_index, event):
     result = service.spreadsheets().values().update(
         spreadsheetId=SPREADSHEET_ID, range="Sheet1!" + cell_range,
         valueInputOption='RAW', body=body).execute()
-    print("\n\nEvent Updated: ")
-    event.print_filled()
+    print("Event Updated: ID = " + str(event.get("id")))
     return
 
 
 def update_db(events, old_events):
     for index, event in enumerate(events):
         try:
-            if event != old_events[index]:
+            if not event.compare(old_events[index]):
                 write_event(index, event)
         except IndexError:
+            print("Caught by Index Error")
             write_event(index, event)
 
     return
@@ -228,7 +228,11 @@ def build_hash_table(items, key_name):
         # if the hash value index is available, fill it with the data
         if hash_map[next_hash_value].get_key() == "":
             hash_map[next_hash_value].set_key(item.get(key_name))
-            hash_map[next_hash_value].add_val(int(item.get("id")))
+            try:
+                # append the ID, if no ID exists, a value error is thrown for invalid statement int("")
+                hash_map[next_hash_value].add_val(int(item.get("id")))
+            except ValueError:
+                hash_map[next_hash_value].add_val(-1)
         # else check if they valid key is in that spot, and append the value to that spot
         elif hash_map[next_hash_value].get_key() == item.get(key_name):
             hash_map[next_hash_value].add_val(int(item.get("id")))
@@ -262,7 +266,7 @@ def main():
     # get the database, this fills into a header array, a 2D values array, and a service API value.
     header, values, service = get_db_values()
     # output the data (formatted)
-    # print_data(header, values, 35)
+    print_data(header, values, 35)
 
     old_events = []
     events = []
@@ -274,10 +278,14 @@ def main():
         old_events.append(Event())
         events[-1].build_from_event(row)
         old_events[-1].build_from_event(row)
+        if old_events[-1].get("id") != "":
+            old_events[-1].set_id(int(old_events[-1].get("id")))
 
     for event in events:
-        if event.get("id") == -1:
-            print("Event detected with no ID")
+        if event.get("id") == -1 or event.get("id") == "":
+            print("Event detected with no ID, rebuilding IDs")
+            for new_id, id_event in enumerate(events):
+                id_event.set_id(new_id)
             break
     else:
         print("No missing IDs detected.")
