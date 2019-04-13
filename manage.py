@@ -147,53 +147,77 @@ def get_db_values():
 
 def print_data(headers, values, w):
 
+    # create the formatting string here, as it cannot be done in-place
     format_string = '{:>' + str(w) + '}'
 
+    # if there is no data, output that
     if not values:
         print('No data found.')
+    # else data exists
     else:
+        # for each column of data
         for col in headers:
+            # output the header row
             print(format_string.format(col + ":"), end="")
+        # output newline
         print("")
+        # for each line of each event
         for row in values:
+            # for each column in that events data
             for col in row:
+                # output with the same formatting as the header row
                 print(format_string.format(col), end="")
+            # output newline
             print("")
     return
 
 
 def write_cells(db_range, values):
 
+    # body is a dictionary used by the Google Sheets API and must be formatted like this
     body = {
         "values": values
     }
+    # call the API and write the values to the specified range
     result = service.spreadsheets().values().update(
         spreadsheetId=SPREADSHEET_ID, range="Sheet1!" + db_range,
         valueInputOption='RAW', body=body).execute()
+    # print how many cells were updated in the process
     print('{0} cells updated.'.format(result.get('updatedCells')))
 
     return
 
 
 def write_event(event_index, event):
+    # set the creation date of the event being writen to the string version of the creation date
     setattr(event, "creation_date", str(getattr(event, "creation_date")))
+    # body is a dictionary used by the Google Sheets API and must be formatted like this
     body = {
         "values": [event.get_values()]
     }
+    # build the cell range to write the event to
     cell_range = "A" + str(event_index + 2) + ":S" + str(event_index + 2)
+    # call the API and write the values to the specified range
     result = service.spreadsheets().values().update(
         spreadsheetId=SPREADSHEET_ID, range="Sheet1!" + cell_range,
         valueInputOption='RAW', body=body).execute()
+    # print out which event was updated
     print("Event Updated: ID = " + str(event.get("id")))
     return
 
 
 def update_db(events, old_events):
+    # for each event in events (with index/id included)
     for index, event in enumerate(events):
+        # try to write the event
         try:
+            # if the new version of the event is not the same as the old version
             if not event.compare(old_events[index]):
+                # write that event
                 write_event(index, event)
+        # index error occurs when some fields are out of place
         except IndexError:
+            # write the event to the database to avoid data-loss
             print("Caught by Index Error")
             write_event(index, event)
 
@@ -201,6 +225,7 @@ def update_db(events, old_events):
 
 
 def hash_string(string, table_size):
+    # set the index value to 0 as a baseline
     next_map_value = 0
     # for each character in the string
     for char in string:
