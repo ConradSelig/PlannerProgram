@@ -296,6 +296,8 @@ def main():
 
     old_events = []
     events = []
+    keys = getattr(Event(), "attrs")
+    hash_map_dict = {key: [] for key in keys}
 
     # build new and old array, they are identical to start off with. We use this to compare which events changed at
     # save time to save API calls by only pushing changed events
@@ -316,18 +318,18 @@ def main():
     else:
         print("No missing IDs detected.")
 
-    hash_map = build_hash_table(events, "title")
-    for index, next_hash in enumerate(hash_map):
+    hash_map_dict["title"] = build_hash_table(events, "title")
+    for index, next_hash in enumerate(hash_map_dict["title"]):
         print(index, next_hash)
 
     lookup_string = input("Enter Row Title: ")
     while lookup_string != "":
 
-        key_index = hash_string(lookup_string, len(hash_map))
-        while hash_map[key_index].get_key() != lookup_string:
+        key_index = hash_string(lookup_string, len(hash_map_dict["title"]))
+        while hash_map_dict["title"][key_index].get_key() != lookup_string:
             key_index += 1
 
-        for ID in hash_map[key_index].get_values():
+        for ID in hash_map_dict["title"][key_index].get_values():
             print(events[ID].print_filled())
             print("")
 
