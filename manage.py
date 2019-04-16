@@ -2,6 +2,7 @@ from __future__ import print_function
 import pickle
 import time
 import os.path
+import requests
 from random import randint
 from random import shuffle
 from datetime import datetime
@@ -50,8 +51,8 @@ class Event:
         self.id = -1
 
     def compare(self, other):
-        local = [getattr(self, key) for key in self.attrs]
-        foreign = [getattr(other, key) for key in self.attrs]
+        local = [str(getattr(self, key)) for key in self.attrs]
+        foreign = [str(getattr(other, key)) for key in self.attrs]
         return local == foreign
 
     def build_from_event(self, values):
@@ -239,7 +240,7 @@ def hash_string(string, table_size):
 
 def build_hash_table(items, key_name):
 
-    print("Buidling Hash Table")
+    print("Building Hash Table")
 
     table_size = len(items)
     hash_map = [HashMapValue() for _ in range(table_size)]
@@ -319,24 +320,42 @@ def main():
     for index, next_hash in enumerate(hash_map):
         print(index, next_hash)
 
-    lookup_string = " "
+    lookup_string = input("Enter Row Title: ")
     while lookup_string != "":
-        lookup_string = input("Enter Row Title: ")
+
         key_index = hash_string(lookup_string, len(hash_map))
         while hash_map[key_index].get_key() != lookup_string:
             key_index += 1
 
         for ID in hash_map[key_index].get_values():
-            print(events[ID].get("creation_date"))
+            print(events[ID].print_filled())
+            print("")
+
+        lookup_string = input("Enter Row Title: ")
+
+    '''
+    print("Getting Words...")
+    words_url = "http://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text/plain"
+    response = requests.get(words_url)
+    words = response.content.splitlines()
+    words = [b.decode("utf-8") for b in words]
+
+    classes = ["Calc 1", "Calc 2", "Calc 2", "Tech Comm 1", "Tech Comm 2", "CSC 150", "CSC 215", "CSC 251"]
+    locations = ["CB", "CM", "EEP", "Paleo", "CBEC", "MI", "McLaury"]
 
     # fill with 100 semi-random events
-    '''
     for i in range(100):
         print("Building Next Event...", i + 1)
         events.append(Event(title="Test " + str(randint(0, i)),
                             todo="T" if randint(0, 1) == 1 else "F",
                             complete="T" if randint(0, 1) == 1 else "F",
-                            number="" if randint(0, 2) == 1 else randint(0, 10)))
+                            number="" if randint(0, 2) == 1 else randint(0, 10),
+                            description=words[randint(0, len(words) - 1)] + " " + words[randint(0, len(words) - 1)] + " " + words[randint(0, len(words) - 1)],
+                            text=words[randint(0, len(words) - 1)] + " " + words[randint(0, len(words) - 1)] + " " + words[randint(0, len(words) - 1)],
+                            duration=randint(0, 50),
+                            location=locations[randint(0, len(locations) - 1)],
+                            subtitle=classes[randint(0, len(classes) - 1)]
+                            ))
         events[i].set_id(i)
         time.sleep(0.25)
     '''
