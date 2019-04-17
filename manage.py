@@ -10,6 +10,7 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 # pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+import cht
 
 
 # If modifying these scopes, delete the file token.pickle.
@@ -20,98 +21,6 @@ SPREADSHEET_ID = '1n4nkoIfEo2_jdrAfykvhABOKlznIOft_3MZXx8ntXM4'
 DATA_RANGE = 'Sheet1!$A$1:$YY'
 
 service = ""
-
-
-class Event:
-
-    def __init__(self, title="", subtitle="", description="", text="", event_date="",
-                 last_modified_date="", due_date="", in_time="", duration="", location="", attachments="", path="",
-                 contacts="", number="", tags="", todo="", complete=""):
-        self.attrs = ["title", "subtitle", "description", "text", "event_date", "creation_date", "last_modified_date",
-                      "due_date", "time", "duration", "location", "attachments", "path", "contacts", "number", "tags",
-                      "todo", "complete", "id"]
-        self.title = title
-        self.subtitle = subtitle
-        self.description = description
-        self.text = text
-        self.event_date = event_date
-        self.creation_date = datetime.now()
-        self.last_modified_date = last_modified_date
-        self.due_date = due_date
-        self.time = in_time
-        self.duration = duration
-        self.location = location
-        self.attachments = attachments
-        self.path = path
-        self.contacts = contacts
-        self.number = number
-        self.tags = tags
-        self.todo = todo
-        self.complete = complete
-        self.id = -1
-
-    def compare(self, other):
-        local = [str(getattr(self, key)) for key in self.attrs]
-        foreign = [str(getattr(other, key)) for key in self.attrs]
-        return local == foreign
-
-    def build_from_event(self, values):
-        for index, key in enumerate(self.attrs):
-            try:
-                setattr(self, key, values[index])
-            except IndexError:
-                setattr(self, key, "")
-        return
-
-    def print_all(self):
-        for attr in self.attrs:
-            print(attr, " = ", getattr(self, attr))
-        return
-
-    def print_filled(self):
-        for attr in self.attrs:
-            if getattr(self, attr) != "":
-                print(attr, " = ", getattr(self, attr))
-        return
-
-    def get_values(self):
-        values = []
-        for attr in self.attrs:
-            values.append(getattr(self, attr))
-        return values
-
-    def set_id(self, new_id):
-        self.id = new_id
-        return
-
-    def get(self, attr):
-        return getattr(self, attr)
-
-
-class HashMapValue:
-
-    def __init__(self):
-        self.key = ""
-        self.values = []
-
-    def __str__(self):
-        if self.key is not "":
-            return str(self.key) + ": " + str(self.values)
-        else:
-            return "Null: [Null]"
-
-    def set_key(self, key):
-        self.key = key
-
-    def add_val(self, value):
-        self.values.append(value)
-        return
-
-    def get_key(self):
-        return self.key
-
-    def get_values(self):
-        return self.values
 
 
 def get_db_values():
@@ -144,33 +53,6 @@ def get_db_values():
     values = result.get('values', [])
 
     return values[0], values[1:], service
-
-
-def print_data(headers, values, w):
-
-    # create the formatting string here, as it cannot be done in-place
-    format_string = '{:>' + str(w) + '}'
-
-    # if there is no data, output that
-    if not values:
-        print('No data found.')
-    # else data exists
-    else:
-        # for each column of data
-        for col in headers:
-            # output the header row
-            print(format_string.format(col + ":"), end="")
-        # output newline
-        print("")
-        # for each line of each event
-        for row in values:
-            # for each column in that events data
-            for col in row:
-                # output with the same formatting as the header row
-                print(format_string.format(col), end="")
-            # output newline
-            print("")
-    return
 
 
 def write_cells(db_range, values):
@@ -225,85 +107,24 @@ def update_db(events, old_events):
     return
 
 
-def hash_string(string, table_size):
-    # set the index value to 0 as a baseline
-    next_map_value = 0
-    # for each character in the string
-    for char in string:
-        # add that characters value to the total
-        next_map_value += ord(char)
-    # mod that value by the table size
-    next_map_value %= table_size
-    # return the generated hash value
-    return next_map_value
-
-
-def build_hash_table(items, key_name):
-
-    print("Building Hash Table")
-
-    table_size = len(items)
-    hash_map = [HashMapValue() for _ in range(table_size)]
-
-    # for each string in list
-    for item in items:
-
-        # get the hash value for the next key
-        next_hash_value = hash_string(item.get(key_name), table_size)
-
-        # if the hash value index is available, fill it with the data
-        if hash_map[next_hash_value].get_key() == "":
-            hash_map[next_hash_value].set_key(item.get(key_name))
-            try:
-                # append the ID, if no ID exists, a value error is thrown for invalid statement int("")
-                hash_map[next_hash_value].add_val(int(item.get("id")))
-            except ValueError:
-                hash_map[next_hash_value].add_val(-1)
-        # else check if they valid key is in that spot, and append the value to that spot
-        elif hash_map[next_hash_value].get_key() == item.get(key_name):
-            hash_map[next_hash_value].add_val(int(item.get("id")))
-        # else an open fill is needed
-        else:
-            # add one to the index
-            i = next_hash_value + 1
-            # while i is in the table range
-            while i <= table_size:
-                # if reaching end of table range, reset to start of hash table
-                if i >= table_size:
-                    i = 0
-                # if the next spot is open, fill it with the data and break from open fill
-                if hash_map[i].get_key() == "":
-                    hash_map[i].set_key(item.get(key_name))
-                    hash_map[i].add_val(int(item.get("id")))
-                    break
-                # else check if the next spots key is the current key, and append the value to that spot, and break
-                elif hash_map[i].get_key() == item.get(key_name):
-                    hash_map[i].add_val(int(item.get("id")))
-                    break
-                # add one to index to check for the next spot
-                i += 1
-
-    return hash_map
-
-
 def main():
     # define service as a global so it does not have to be passed into so many function definitions
     global service
     # get the database, this fills into a header array, a 2D values array, and a service API value.
     header, values, service = get_db_values()
     # output the data (formatted)
-    print_data(header, values, 35)
+    cht.output.print_table_data(header, values, 35)
 
     old_events = []
     events = []
-    keys = getattr(Event(), "attrs")
+    keys = getattr(cht.classes.Event(), "attrs")
     hash_map_dict = {key: [] for key in keys}
 
     # build new and old array, they are identical to start off with. We use this to compare which events changed at
     # save time to save API calls by only pushing changed events
     for row in values:
-        events.append(Event())
-        old_events.append(Event())
+        events.append(cht.classes.Event())
+        old_events.append(cht.classes.Event())
         events[-1].build_from_event(row)
         old_events[-1].build_from_event(row)
         if old_events[-1].get("id") != "":
@@ -318,26 +139,26 @@ def main():
     else:
         print("No missing IDs detected.")
 
-    hash_map_dict["title"] = build_hash_table(events, "title")
+    hash_map_dict["title"] = cht.hashing.build_hash_table(events, "title")
     for index, next_hash in enumerate(hash_map_dict["title"]):
         print(index, next_hash)
 
     lookup_string = input("Enter Row Title: ")
     while lookup_string != "":
 
-        key_index = hash_string(lookup_string, len(hash_map_dict["title"]))
+        key_index = cht.hashing.hash_string(lookup_string, len(hash_map_dict["title"]))
         origin_index = key_index
         while hash_map_dict["title"][key_index].get_key() != lookup_string:
             key_index += 1
             if key_index == origin_index:
                 print("No Data Found for that Entry")
-                ID = -1
+                key_index = -1
                 break
             if key_index >= len(hash_map_dict["title"]):
                 # -1 so next index tried is 0
                 key_index = -1
 
-        if ID != -1:
+        if key_index != -1:
             for ID in hash_map_dict["title"][key_index].get_values():
                 print(events[ID].print_filled())
                 print("")
