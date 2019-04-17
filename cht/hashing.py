@@ -13,6 +13,18 @@ def hash_string(string, table_size):
     # return the generated hash value
     return next_map_value
 
+'''
+def add_row():
+    return
+
+
+def add_rows(rows):
+    
+    hash_index = 0
+    
+    for row in rows:
+'''
+
 
 def build_hash_table(items, key_name):
 

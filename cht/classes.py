@@ -1,32 +1,18 @@
 from datetime import datetime
 
 
-class Event:
+class CHT:
 
-    def __init__(self, title="", subtitle="", description="", text="", event_date="",
-                 last_modified_date="", due_date="", in_time="", duration="", location="", attachments="", path="",
-                 contacts="", number="", tags="", todo="", complete=""):
-        self.attrs = ["title", "subtitle", "description", "text", "event_date", "creation_date", "last_modified_date",
-                      "due_date", "time", "duration", "location", "attachments", "path", "contacts", "number", "tags",
-                      "todo", "complete", "id"]
-        self.title = title
-        self.subtitle = subtitle
-        self.description = description
-        self.text = text
-        self.event_date = event_date
-        self.creation_date = datetime.now()
-        self.last_modified_date = last_modified_date
-        self.due_date = due_date
-        self.time = in_time
-        self.duration = duration
-        self.location = location
-        self.attachments = attachments
-        self.path = path
-        self.contacts = contacts
-        self.number = number
-        self.tags = tags
-        self.todo = todo
-        self.complete = complete
+    def __init__(self, keys):
+        hash_map_dict = {key: [] for key in keys}
+
+
+class Row:
+
+    def __init__(self, attrs):
+        self.attrs = attrs
+        for key in attrs:
+            setattr(self, key, "")
         self.id = -1
 
     def compare(self, other):
