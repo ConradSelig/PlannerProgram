@@ -326,12 +326,21 @@ def main():
     while lookup_string != "":
 
         key_index = hash_string(lookup_string, len(hash_map_dict["title"]))
+        origin_index = key_index
         while hash_map_dict["title"][key_index].get_key() != lookup_string:
             key_index += 1
+            if key_index == origin_index:
+                print("No Data Found for that Entry")
+                ID = -1
+                break
+            if key_index >= len(hash_map_dict["title"]):
+                # -1 so next index tried is 0
+                key_index = -1
 
-        for ID in hash_map_dict["title"][key_index].get_values():
-            print(events[ID].print_filled())
-            print("")
+        if ID != -1:
+            for ID in hash_map_dict["title"][key_index].get_values():
+                print(events[ID].print_filled())
+                print("")
 
         lookup_string = input("Enter Row Title: ")
 
