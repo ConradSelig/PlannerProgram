@@ -118,7 +118,7 @@ def main():
     old_events = []
     events = []
     keys = getattr(cht.classes.Row(header), "attrs")
-    hash_map_dict = {key: [] for key in keys}
+    CHT = cht.classes.CHT(header, values)
 
     # build new and old array, they are identical to start off with. We use this to compare which events changed at
     # save time to save API calls by only pushing changed events
@@ -139,29 +139,16 @@ def main():
     else:
         print("No missing IDs detected.")
 
-    hash_map_dict["title"] = cht.hashing.build_hash_table(events, "title")
-    for index, next_hash in enumerate(hash_map_dict["title"]):
+    CHT["title"] = cht.hashing.build_hash_table(events, "title")
+    for index, next_hash in enumerate(CHT["title"]):
         print(index, next_hash)
 
     lookup_string = input("Enter Row Title: ")
     while lookup_string != "":
 
-        key_index = cht.hashing.hash_string(lookup_string, len(hash_map_dict["title"]))
-        origin_index = key_index
-        while hash_map_dict["title"][key_index].get_key() != lookup_string:
-            key_index += 1
-            if key_index == origin_index:
-                print("No Data Found for that Entry")
-                key_index = -1
-                break
-            if key_index >= len(hash_map_dict["title"]):
-                # -1 so next index tried is 0
-                key_index = -1
-
-        if key_index != -1:
-            for ID in hash_map_dict["title"][key_index].get_values():
-                print(events[ID].print_filled())
-                print("")
+        for row in cht.hashing.lookup_hash("title", lookup_string, CHT.get_map()):
+            print("\n\n")
+            print(events[row].print_filled())
 
         lookup_string = input("Enter Row Title: ")
 

@@ -3,8 +3,21 @@ from datetime import datetime
 
 class CHT:
 
-    def __init__(self, keys):
-        hash_map_dict = {key: [] for key in keys}
+    def __init__(self, keys, values):
+        self.hash_map_dict = {key: [] for key in keys}
+        self.values = values
+
+    def __getitem__(self, key):
+        return self.hash_map_dict[key]
+
+    def __setitem__(self, key, value):
+        self.hash_map_dict[key] = value
+
+    def __len__(self):
+        return len(self.hash_map_dict)
+
+    def get_map(self):
+        return self.hash_map_dict
 
 
 class Row:

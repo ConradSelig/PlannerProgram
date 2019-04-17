@@ -13,6 +13,29 @@ def hash_string(string, table_size):
     # return the generated hash value
     return next_map_value
 
+
+def lookup_hash(key, lookup_val, hash_map_dict):
+    key_index = hash_string(lookup_val, len(hash_map_dict["title"]))
+    origin_index = key_index
+
+    return_rows = []
+
+    while hash_map_dict[key][key_index].get_key() != lookup_val:
+        key_index += 1
+        if key_index == origin_index:
+            print("No Data Found for that Entry")
+            key_index = -1
+            break
+        if key_index >= len(hash_map_dict[key]):
+            # -1 so next index tried is 0
+            key_index = -1
+
+    if key_index != -1:
+        for ID in hash_map_dict[key][key_index].get_values():
+            return_rows.append(ID)
+
+    return return_rows
+
 '''
 def add_row():
     return
