@@ -1,21 +1,21 @@
-def print_table_data(headers, values, w):
+def print_table_data(CHT, w):
 
     # create the formatting string here, as it cannot be done in-place
     format_string = '{:>' + str(w) + '}'
 
     # if there is no data, output that
-    if not values:
+    if not CHT.raw_values:
         print('No data found.')
     # else data exists
     else:
         # for each column of data
-        for col in headers:
+        for col in CHT.keys:
             # output the header row
             print(format_string.format(col + ":"), end="")
         # output newline
         print("")
         # for each line of each event
-        for row in values:
+        for row in CHT.raw_values:
             # for each column in that events data
             for col in row:
                 # output with the same formatting as the header row

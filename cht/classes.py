@@ -4,17 +4,29 @@ from datetime import datetime
 class CHT:
 
     def __init__(self, keys, values):
+        self.keys = keys
+        self.raw_values = values
+        self.rows = []
         self.hash_map_dict = {key: [] for key in keys}
-        self.values = values
 
     def __getitem__(self, key):
         return self.hash_map_dict[key]
 
+    def __get__(self, instance, owner):
+        return self.owner
+
     def __setitem__(self, key, value):
         self.hash_map_dict[key] = value
+        return
 
     def __len__(self):
         return len(self.hash_map_dict)
+
+    def append(self, row):
+        temp_row = Row(self.keys)
+        temp_row.build_from_event(row)
+        self.rows.append(temp_row)
+        return
 
     def get_map(self):
         return self.hash_map_dict
@@ -36,7 +48,10 @@ class Row:
     def build_from_event(self, values):
         for index, key in enumerate(self.attrs):
             try:
-                setattr(self, key, values[index])
+                if key == "id":
+                    setattr(self, key, int(values[index]))
+                else:
+                    setattr(self, key, values[index])
             except IndexError:
                 setattr(self, key, "")
         return

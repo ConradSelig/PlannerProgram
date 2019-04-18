@@ -112,17 +112,20 @@ def main():
     global service
     # get the database, this fills into a header array, a 2D values array, and a service API value.
     header, values, service = get_db_values()
+    CHT = cht.classes.CHT(header, values)
+    old_CHT = cht.classes.CHT(header, values)
     # output the data (formatted)
-    cht.output.print_table_data(header, values, 35)
+    cht.output.print_table_data(CHT, 35)
 
     old_events = []
     events = []
-    keys = getattr(cht.classes.Row(header), "attrs")
-    CHT = cht.classes.CHT(header, values)
 
     # build new and old array, they are identical to start off with. We use this to compare which events changed at
     # save time to save API calls by only pushing changed events
     for row in values:
+        CHT.append(row)
+        old_CHT.append(row)
+
         events.append(cht.classes.Row(header))
         old_events.append(cht.classes.Row(header))
         events[-1].build_from_event(row)
