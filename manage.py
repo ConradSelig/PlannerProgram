@@ -122,10 +122,10 @@ def main():
 
     # build new and old array, they are identical to start off with. We use this to compare which events changed at
     # save time to save API calls by only pushing changed events
-    for row in values:
-        CHT.append(row)
-        old_CHT.append(row)
+    CHT.add_rows(values)
+    CHT.add_rows(values)
 
+    for row in values:
         events.append(cht.classes.Row(header))
         old_events.append(cht.classes.Row(header))
         events[-1].build_from_event(row)

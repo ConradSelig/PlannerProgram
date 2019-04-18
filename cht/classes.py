@@ -22,10 +22,15 @@ class CHT:
     def __len__(self):
         return len(self.hash_map_dict)
 
-    def append(self, row):
-        temp_row = Row(self.keys)
-        temp_row.build_from_event(row)
-        self.rows.append(temp_row)
+    def add_row(self, row):
+        self.add_rows([row])
+        return
+
+    def add_rows(self, rows):
+        for row in rows:
+            temp_row = Row(self.keys)
+            temp_row.build_from_event(row)
+            self.rows.append(temp_row)
         return
 
     def get_map(self):
