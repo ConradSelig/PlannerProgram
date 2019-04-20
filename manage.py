@@ -89,13 +89,13 @@ def write_event(event_index, event):
     return
 
 
-def update_db(events, old_events):
+def update_db(CHT, old_CHT):
     # for each event in events (with index/id included)
-    for index, event in enumerate(events):
+    for index, event in enumerate(CHT.rows):
         # try to write the event
         try:
             # if the new version of the event is not the same as the old version
-            if not event.compare(old_events[index]):
+            if not event.compare(CHT.rows[index]):
                 # write that event
                 write_event(index, event)
         # index error occurs when some fields are out of place
@@ -117,32 +117,11 @@ def main():
     # output the data (formatted)
     cht.output.print_table_data(CHT, 35)
 
-    old_events = []
-    events = []
-
     # build new and old array, they are identical to start off with. We use this to compare which events changed at
     # save time to save API calls by only pushing changed events
     CHT.add_rows(values)
-    CHT.add_rows(values)
+    old_CHT.add_rows(values, False)
 
-    for row in values:
-        events.append(cht.classes.Row(header))
-        old_events.append(cht.classes.Row(header))
-        events[-1].build_from_event(row)
-        old_events[-1].build_from_event(row)
-        if old_events[-1].get("id") != "":
-            old_events[-1].set_id(int(old_events[-1].get("id")))
-
-    for event in events:
-        if event.get("id") == -1 or event.get("id") == "":
-            print("Event detected with no ID, rebuilding IDs")
-            for new_id, id_event in enumerate(events):
-                id_event.set_id(new_id)
-            break
-    else:
-        print("No missing IDs detected.")
-
-    CHT["title"] = cht.hashing.build_hash_table(events, "title")
     for index, next_hash in enumerate(CHT["title"]):
         print(index, next_hash)
 
@@ -151,7 +130,7 @@ def main():
 
         for row in cht.hashing.lookup_hash("title", lookup_string, CHT.get_map()):
             print("\n\n")
-            print(events[row].print_filled())
+            CHT[row].print_filled()
 
         lookup_string = input("Enter Row Title: ")
 
@@ -182,9 +161,15 @@ def main():
         time.sleep(0.25)
     '''
 
-    update_db(events, old_events)
+    update_db(CHT, old_CHT)
     return
 
 
 if __name__ == '__main__':
     main()
+
+'''
+attrs = ["title", "subtitle", "description", "text", "event_date", "creation_date", "last_modified_date",
+                       "due_date", "time", "duration", "location", "attachments", "path", "contacts", "number", "tags",
+                       "todo", "complete", "id"]
+'''

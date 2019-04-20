@@ -36,29 +36,17 @@ def lookup_hash(key, lookup_val, hash_map_dict):
 
     return return_rows
 
-'''
-def add_row():
-    return
 
-
-def add_rows(rows):
-    
-    hash_index = 0
-    
-    for row in rows:
-'''
-
-
-def build_hash_table(items, key_name):
+def build_hash_table(CHT, key_name):
 
     print("Building Hash Table")
 
-    table_size = len(items)
+    table_size = len(CHT)
     hash_map = [classes.HashMapValue() for _ in range(table_size)]
 
     # for each string in list
-    for item in items:
-
+    for item in CHT.rows:
+        print(item)
         # get the hash value for the next key
         next_hash_value = hash_string(item.get(key_name), table_size)
 

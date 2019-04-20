@@ -1,4 +1,5 @@
 from datetime import datetime
+from cht import hashing
 
 
 class CHT:
@@ -10,27 +11,33 @@ class CHT:
         self.hash_map_dict = {key: [] for key in keys}
 
     def __getitem__(self, key):
+        if isinstance(key, int):
+            return self.rows[key]
         return self.hash_map_dict[key]
-
-    def __get__(self, instance, owner):
-        return self.owner
 
     def __setitem__(self, key, value):
         self.hash_map_dict[key] = value
         return
 
     def __len__(self):
-        return len(self.hash_map_dict)
+        return len(self.rows)
 
-    def add_row(self, row):
-        self.add_rows([row])
+    def add_row(self, row, hash=True, print=True):
+        self.add_rows([row], hash)
         return
 
-    def add_rows(self, rows):
+    def add_rows(self, rows, hash=True, print=True):
         for row in rows:
             temp_row = Row(self.keys)
             temp_row.build_from_event(row)
             self.rows.append(temp_row)
+        for row in self.rows:
+            if row.get("id") == -1 or row.get("id") == "":
+                for new_id, id_row in enumerate(self.rows):
+                    id_row.set_id(new_id)
+                break
+        if hash:
+            self.hash_map_dict["title"] = hashing.build_hash_table(self, "title")
         return
 
     def get_map(self):
