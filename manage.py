@@ -122,16 +122,19 @@ def main():
     CHT.add_rows(values)
     old_CHT.add_rows(values, False)
 
-    for index, next_hash in enumerate(CHT["title"]):
+    lookup_key = input("Enter Key to Begin Lookup: ")
+    for index, next_hash in enumerate(CHT[lookup_key]):
         print(index, next_hash)
-
     lookup_string = input("Enter Row Title: ")
-    while lookup_string != "":
+    while lookup_key != "" and lookup_string != "":
 
-        for row in cht.hashing.lookup_hash("title", lookup_string, CHT.get_map()):
+        for row in cht.hashing.lookup_hash(lookup_key, lookup_string, CHT.get_map()):
             print("\n\n")
             CHT[row].print_filled()
 
+        lookup_key = input("Enter Key to Begin Lookup: ")
+        for index, next_hash in enumerate(CHT[lookup_key]):
+            print(index, next_hash)
         lookup_string = input("Enter Row Title: ")
 
     '''

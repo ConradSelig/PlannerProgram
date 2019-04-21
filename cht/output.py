@@ -23,3 +23,19 @@ def print_table_data(CHT, w):
             # output newline
             print("")
     return
+
+
+def progress_bar(marks: int, total: int):
+    print("Current Progress: " + str(marks) + " / " + str(total))
+    print("[", end="")
+    if total > 0:
+        for mark in range(marks - 1):
+            print("=", end="")
+        if marks > 0 and marks != total:
+            print(">", end="")
+        elif marks == total:
+            print("=", end="")
+        for dot in range(total - marks):
+            print(".", end="")
+    print("]")
+    return

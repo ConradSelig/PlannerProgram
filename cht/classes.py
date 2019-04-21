@@ -1,5 +1,6 @@
 from datetime import datetime
 from cht import hashing
+from cht import output
 
 
 class CHT:
@@ -22,11 +23,11 @@ class CHT:
     def __len__(self):
         return len(self.rows)
 
-    def add_row(self, row, hash=True, print=True):
-        self.add_rows([row], hash)
+    def add_row(self, row, hash=True, show_print=True):
+        self.add_rows([row], hash, show_print)
         return
 
-    def add_rows(self, rows, hash=True, print=True):
+    def add_rows(self, rows, hash=True, show_print=True):
         for row in rows:
             temp_row = Row(self.keys)
             temp_row.build_from_event(row)
@@ -37,7 +38,12 @@ class CHT:
                     id_row.set_id(new_id)
                 break
         if hash:
-            self.hash_map_dict["title"] = hashing.build_hash_table(self, "title")
+            if show_print:
+                print("Building Cubic Hash Table...")
+            for i, key in enumerate(self.keys):
+                if show_print:
+                    output.progress_bar(i, len(self.keys) - 1)
+                self.hash_map_dict[key] = hashing.build_hash_table(self, key)
         return
 
     def get_map(self):
