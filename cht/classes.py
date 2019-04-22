@@ -1,14 +1,16 @@
 from datetime import datetime
 from cht import hashing
 from cht import output
+import re
 
 
 class CHT:
 
     def __init__(self, keys, values):
-        self.keys = keys
+        self.keys = keys + ["__words__"]
         self.raw_values = values
         self.rows = []
+        self.words = []
         self.hash_map_dict = {key: [] for key in keys}
 
     def __getitem__(self, key):
@@ -23,31 +25,48 @@ class CHT:
     def __len__(self):
         return len(self.rows)
 
-    def add_row(self, row, hash=True, show_print=True):
-        self.add_rows([row], hash, show_print)
+    def add_row(self, row, do_hash=True, show_print=True):
+        self.add_rows([row], do_hash, show_print)
         return
 
-    def add_rows(self, rows, hash=True, show_print=True):
+    def add_rows(self, rows, do_hash=True, show_print=True):
         for row in rows:
             temp_row = Row(self.keys)
             temp_row.build_from_event(row)
             self.rows.append(temp_row)
+            for new_word in temp_row.get_words():
+                self.words.append(Word(new_word, temp_row.get("id")))
         for row in self.rows:
             if row.get("id") == -1 or row.get("id") == "":
                 for new_id, id_row in enumerate(self.rows):
                     id_row.set_id(new_id)
                 break
-        if hash:
+        if do_hash:
             if show_print:
                 print("Building Cubic Hash Table...")
             for i, key in enumerate(self.keys):
                 if show_print:
-                    output.progress_bar(i, len(self.keys) - 1)
+                    output.progress_bar(i, len(self.keys))
                 self.hash_map_dict[key] = hashing.build_hash_table(self, key)
+            if show_print:
+                output.progress_bar(len(self.keys), len(self.keys))
+
         return
 
     def get_map(self):
         return self.hash_map_dict
+
+
+class Word:
+
+    def __init__(self, word, word_id):
+        self.word = word
+        self.id = word_id
+
+    def get(self, attr):
+        if attr == "id":
+            return self.id
+        return self.word
 
 
 class Row:
@@ -97,6 +116,13 @@ class Row:
 
     def get(self, attr):
         return getattr(self, attr)
+
+    def get_words(self):
+        words = ""
+        for attr in self.attrs:
+            words += str(getattr(self, attr)) + " "
+        words = re.sub("[!\"#$%&'()*+,\\-./:;<=>?@[\\]^_`{|}~]", "", words)
+        return words.split()
 
 
 class HashMapValue:

@@ -119,10 +119,20 @@ def main():
 
     # build new and old array, they are identical to start off with. We use this to compare which events changed at
     # save time to save API calls by only pushing changed events
+
+    print("Starting Hash... (Start Time = ~" + str(datetime) + ")")
+    start_time = datetime.now()
     CHT.add_rows(values)
+    end_time = datetime.now()
+    duration = end_time - start_time
+    print("Hash Complete. (End Time = " + str(end_time) + ")")
+    print("Time hash took to complete: " + str(duration))
+    print("Words Hashed:", len(CHT.words))
     old_CHT.add_rows(values, False)
 
     lookup_key = input("Enter Key to Begin Lookup: ")
+    if lookup_key == "":
+        lookup_key = "__words__"
     for index, next_hash in enumerate(CHT[lookup_key]):
         print(index, next_hash)
     lookup_string = input("Enter Row Title: ")
@@ -133,6 +143,8 @@ def main():
             CHT[row].print_filled()
 
         lookup_key = input("Enter Key to Begin Lookup: ")
+        if lookup_key == "":
+            lookup_key = "__words__"
         for index, next_hash in enumerate(CHT[lookup_key]):
             print(index, next_hash)
         lookup_string = input("Enter Row Title: ")

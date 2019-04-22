@@ -1,4 +1,5 @@
 from cht import classes
+from cht import output
 
 
 def hash_string(string, table_size):
@@ -39,11 +40,11 @@ def lookup_hash(key, lookup_val, hash_map_dict):
 
 def build_hash_table(CHT, key_name):
 
-    table_size = len(CHT)
+    table_size = len(CHT) if key_name != "__words__" else len(CHT.words)
     hash_map = [classes.HashMapValue() for _ in range(table_size)]
 
-    # for each string in list
-    for item in CHT.rows:
+    # for each row in list
+    for i, item in enumerate(CHT.rows if key_name != "__words__" else CHT.words):
         # get the hash value for the next key
         next_hash_value = hash_string(item.get(key_name), table_size)
 
