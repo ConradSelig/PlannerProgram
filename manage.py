@@ -121,13 +121,21 @@ def main():
     # save time to save API calls by only pushing changed events
 
     print("Starting Hash... (Start Time = ~" + str(datetime) + ")")
+
     start_time = datetime.now()
     CHT.add_rows(values)
     end_time = datetime.now()
+
     duration = end_time - start_time
     print("Hash Complete. (End Time = " + str(end_time) + ")")
     print("Time hash took to complete: " + str(duration))
     print("Words Hashed:", len(CHT.words))
+    big_o, omega, theta = CHT.get_efficiency()
+    print("Cubic Hash Table Efficiency: ")
+    print("\tO(" + str(big_o) + ")")
+    print("\tΩ(" + str(omega) + ")")
+    print("\tΘ(" + str(theta) + ")")
+
     old_CHT.add_rows(values, False)
 
     lookup_key = input("Enter Key to Begin Lookup: ")
