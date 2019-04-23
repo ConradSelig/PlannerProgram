@@ -28,6 +28,9 @@ class CHT:
     def __dir__(self):
         return self.keys
 
+    def do_hash(self, show_print=True):
+        self.add_rows([], True, show_print)
+
     def add_row(self, row, do_hash=True, show_print=True):
         self.add_rows([row], do_hash, show_print)
         return
@@ -78,7 +81,10 @@ class CHT:
                 total_hashed_lists += 1
                 total_hashed_words += len(hash_map_val.values)
 
-        theta = total_hashed_words / total_hashed_lists
+        try:
+            theta = total_hashed_words / total_hashed_lists
+        except ZeroDivisionError:
+            theta = 0
 
         return big_o, omega, theta
 
@@ -107,15 +113,18 @@ class Row:
         return self.attrs
 
     def compare(self, other):
-        local = [str(getattr(self, key)) for key in self.attrs]
-        foreign = [str(getattr(other, key)) for key in self.attrs]
+        local = [str(getattr(self, key)) for key in [attr for attr in self.attrs if "__" not in attr]]
+        foreign = [str(getattr(other, key)) for key in [attr for attr in self.attrs if "__" not in attr]]
         return local == foreign
 
     def build_from_event(self, values):
         for index, key in enumerate(self.attrs):
             try:
                 if key == "id":
-                    setattr(self, key, int(values[index]))
+                    try:
+                        setattr(self, key, int(values[index]))
+                    except ValueError:
+                        setattr(self, key, -1)
                 else:
                     setattr(self, key, values[index])
             except IndexError:
@@ -135,7 +144,7 @@ class Row:
 
     def get_values(self):
         values = []
-        for attr in self.attrs:
+        for attr in [attr for attr in self.attrs if "__" not in attr]:
             values.append(getattr(self, attr))
         return values
 
