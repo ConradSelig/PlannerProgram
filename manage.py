@@ -1,6 +1,7 @@
 from __future__ import print_function
 import pickle
 import time
+import copy
 import os.path
 import requests
 from random import randint
@@ -113,7 +114,6 @@ def main():
     # get the database, this fills into a header array, a 2D values array, and a service API value.
     header, values, service = get_db_values()
     CHT = cht.classes.CHT(header, values)
-    old_CHT = cht.classes.CHT(header, values)
     # output the data (formatted)
     cht.output.print_table_data(CHT, 35)
 
@@ -132,17 +132,16 @@ def main():
     print("Words Hashed:", len(CHT.words))
     big_o, omega, theta = CHT.get_efficiency()
     print("Cubic Hash Table Efficiency: ")
-    print("\tO(" + str(big_o) + ")")
-    print("\tΩ(" + str(omega) + ")")
-    print("\tΘ(" + str(theta) + ")")
+    print("\tO(" + str(big_o) + ") <- Worst")
+    print("\tΩ(" + str(omega) + ") <- Best")
+    print("\tΘ(" + str(round(theta, 2)) + ") <- Average")
 
-    old_CHT.add_rows(values, False)
+    old_CHT = copy.deepcopy(CHT)
 
-    lookup_key = input("Enter Key to Begin Lookup: ")
+    print("Keys: ", CHT.keys)
+    lookup_key = input("Enter Key to Begin Lookup: ").lower()
     if lookup_key == "":
         lookup_key = "__words__"
-    for index, next_hash in enumerate(CHT[lookup_key]):
-        print(index, next_hash)
     lookup_string = input("Enter Row Title: ")
     while lookup_key != "" and lookup_string != "":
 
@@ -150,11 +149,10 @@ def main():
             print("\n\n")
             CHT[row].print_filled()
 
-        lookup_key = input("Enter Key to Begin Lookup: ")
+        print("Keys: ", CHT.keys)
+        lookup_key = input("Enter Key to Begin Lookup: ").lower()
         if lookup_key == "":
             lookup_key = "__words__"
-        for index, next_hash in enumerate(CHT[lookup_key]):
-            print(index, next_hash)
         lookup_string = input("Enter Row Title: ")
 
     '''

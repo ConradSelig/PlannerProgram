@@ -25,6 +25,9 @@ class CHT:
     def __len__(self):
         return len(self.rows)
 
+    def __dir__(self):
+        return self.keys
+
     def add_row(self, row, do_hash=True, show_print=True):
         self.add_rows([row], do_hash, show_print)
         return
@@ -99,6 +102,9 @@ class Row:
         for key in attrs:
             setattr(self, key, "")
         self.id = -1
+
+    def __dir__(self):
+        return self.attrs
 
     def compare(self, other):
         local = [str(getattr(self, key)) for key in self.attrs]
