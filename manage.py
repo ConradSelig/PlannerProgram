@@ -1,18 +1,18 @@
 from __future__ import print_function
-import pickle
+
+import cht
 import time
 import copy
+import pickle
 import os.path
 import requests
 from random import randint
 from random import shuffle
 from datetime import datetime
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from google_auth_oauthlib.flow import InstalledAppFlow
 # pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
-import cht
-
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
@@ -113,9 +113,9 @@ def main():
     global service
     # get the database, this fills into a header array, a 2D values array, and a service API value.
     header, values, service = get_db_values()
-    CHT = cht.classes.CHT(header, values)
+    localc_cht = cht.classes.CHT(header, values)
     # output the data (formatted)
-    cht.output.print_table_data(CHT, 35)
+    cht.output.print_table_data(localc_cht, 35)
 
     # build new and old array, they are identical to start off with. We use this to compare which events changed at
     # save time to save API calls by only pushing changed events
@@ -123,33 +123,33 @@ def main():
     print("Starting Hash... (Start Time = ~" + str(datetime) + ")")
 
     start_time = datetime.now()
-    CHT.add_rows(values)
+    localc_cht.add_rows(values)
     end_time = datetime.now()
 
     duration = end_time - start_time
     print("Hash Complete. (End Time = " + str(end_time) + ")")
     print("Time hash took to complete: " + str(duration))
-    print("Words Hashed:", len(CHT.words))
-    big_o, omega, theta = CHT.get_efficiency()
+    print("Words Hashed:", len(localc_cht.words))
+    big_o, omega, theta = localc_cht.get_efficiency()
     print("Cubic Hash Table Efficiency: ")
     print("\tO(" + str(big_o) + ") <- Worst")
     print("\tΩ(" + str(omega) + ") <- Best")
     print("\tΘ(" + str(round(theta, 2)) + ") <- Average")
 
-    old_CHT = copy.deepcopy(CHT)
+    old_local_cht = copy.deepcopy(localc_cht)
 
-    print("Keys: ", CHT.keys)
+    print("Keys: ", localc_cht.keys)
     lookup_key = input("Enter Key to Begin Lookup: ").lower()
     if lookup_key == "":
         lookup_key = "__words__"
     lookup_string = input("Enter Row Title: ")
     while lookup_key != "" and lookup_string != "":
 
-        for row in cht.hashing.lookup_hash(lookup_key, lookup_string, CHT.get_map()):
+        for row in cht.hashing.lookup_hash(lookup_key, lookup_string, localc_cht.get_map()):
             print("\n\n")
-            CHT[row].print_filled()
+            localc_cht[row].print_filled()
 
-        print("Keys: ", CHT.keys)
+        print("Keys: ", localc_cht.keys)
         lookup_key = input("Enter Key to Begin Lookup: ").lower()
         if lookup_key == "":
             lookup_key = "__words__"
@@ -182,7 +182,7 @@ def main():
         time.sleep(0.25)
     '''
 
-    update_db(CHT, old_CHT)
+    update_db(localc_cht, old_local_cht)
     return
 
 
