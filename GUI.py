@@ -9,6 +9,34 @@ class ResizableWindow:
         self.f1_style.configure('My.TFrame', background='#334353')
         self.f1 = ttk.Frame(self.parent, style='My.TFrame')
 
+        self.results = ""
+
+        # buttons
+        self.reload_db = ttk.Button(self.f1, text="Reload Database", cursor="hand1")
+        self.save_db = ttk.Button(self.f1, text="Save Database", cursor="hand1")
+        self.export_results = ttk.Button(self.f1, text="Export Results", cursor="hand1")
+        self.clear_selection = ttk.Button(self.f1, text="Clear Selection", cursor="hand1")
+        self.show_cols = ttk.Button(self.f1, text="Show Column Headers", cursor="hand1")
+        self.search = ttk.Button(self.f1, text="Search", cursor="hand1")
+        self.cancel = ttk.Button(self.f1, text="Cancel", cursor="hand1")
+
+        # labels
+        self.lbl_selection_options = ttk.Label(self.f1, text="Selection Options:")
+        self.lbl_max_results = ttk.Label(self.f1, text="Max Results:")
+        self.lbl_search_terms = ttk.Label(self.f1, text="Search Terms:")
+
+        # check boxes
+        self.manual_entry = ttk.Checkbutton(self.f1)
+        self.scan_all = ttk.Checkbutton(self.f1)
+
+        # entry fields
+        self.options_limit = ttk.Entry(self.f1)
+        self.search_terms = ttk.Entry(self.f1)
+
+        # results field
+        self.results = ttk.Label(self.f1, text=self.results)
+
+        '''
         self.temp_var = 0
 
         self.f1.grid(column=0, row=0, sticky=(tk.N, tk.S, tk.E, tk.W))  # added sticky
@@ -35,6 +63,7 @@ class ResizableWindow:
         self.f1.columnconfigure(3, weight=1)
         self.f1.columnconfigure(4, weight=1)
         self.f1.rowconfigure(1, weight=1)
+        '''
 
     def add_var(self):
         self.temp_var += int(self.add_field.get())
