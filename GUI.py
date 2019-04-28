@@ -1,20 +1,16 @@
 import tkinter as tk
 from tkinter import ttk
-import tkinter.scrolledtext as tkscrolled
 
 
 class ResizableWindow:
     def __init__(self, parent):
         self.parent = parent
         self.f1_style = ttk.Style()
-        self.f1_style.configure('My.TFrame', background='#fff')
+        self.f1_style.configure('My.TFrame', background="#F0F0F0")
         self.f1 = ttk.Frame(self.parent, style='My.TFrame')
         self.f1.grid(column=0, row=0, sticky=(tk.N, tk.S, tk.E, tk.W))
 
-        self.results = "a\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk\nl\nm\nb\no\np\nq\nr\ns\nt\nu\nv\nw\nx\ny\nz\n" \
-                       "a\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk\nl\nm\nb\no\np\nq\nr\ns\nt\nu\nv\nw\nx\ny\nz" \
-                       "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz" \
-                       "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+        self.results = "Enter a query request to get results to show here."
 
         # buttons
         self.reload_db = ttk.Button(self.f1, text="Reload Database", cursor="hand1")
@@ -27,9 +23,10 @@ class ResizableWindow:
         self.cancel = ttk.Button(self.f1, text="Cancel", cursor="hand1")
 
         # labels
-        self.lbl_selection_options = ttk.Label(self.f1, text="Selection Options:")
+        self.lbl_selection_options = ttk.Label(self.f1, text="\tSelection Options:")
         self.lbl_max_results = ttk.Label(self.f1, text="Max Results:")
         self.lbl_search_terms = ttk.Label(self.f1, text="Search Terms:")
+        self.lbl_TEMP = ttk.Label(self.f1, text="THIS IS A PLACEHOLDER FOR\nCOLUMN SELECTION.")
 
         # check boxes
         self.manual_entry = ttk.Checkbutton(self.f1, text="Select Columns by Hand")
@@ -47,59 +44,39 @@ class ResizableWindow:
         self.clear_selection.grid(column=6, row=0, columnspan=2, sticky="nsew")
         self.show_cols.grid(column=8, row=0, columnspan=2, sticky="nsew")
         self.add_row.grid(column=10, row=0, columnspan=2, sticky="nsew")
-        self.search.grid(column=12, row=8, columnspan=2, sticky="nsew")
-        self.cancel.grid(column=14, row=8, columnspan=2, sticky="nsew")
+        self.search.grid(column=12, row=8, columnspan=2, sticky="", padx=(20, 20))
+        self.cancel.grid(column=15, row=8, columnspan=2, sticky="e", padx=(20, 20))
 
         # labels
         self.lbl_selection_options.grid(column=12, row=0, columnspan=4, sticky="nsew")
         self.lbl_max_results.grid(column=12, row=5, columnspan=2, sticky="nsew")
         self.lbl_search_terms.grid(column=12, row=6, columnspan=4, sticky="nsew")
+        self.lbl_TEMP.grid(column=12, row=3, columnspan=4, rowspan=2, sticky="nsew")
 
         # check boxes
         self.manual_entry.grid(column=12, row=1, columnspan=4, sticky="nsew")
         self.scan_all.grid(column=12, row=2, columnspan=4, sticky="nsew")
 
         # entry field
-        self.options_limit.grid(column=15, row=5, columnspan=1, sticky="nsew")
-        self.search_terms.grid(column=12, row=7, columnspan=4, sticky="nsew")
+        self.options_limit.grid(column=15, row=5, columnspan=1, sticky="ew", padx=(0, 20))
+        self.search_terms.grid(column=12, row=7, columnspan=4, sticky="nsew", pady=(0, 20), padx=(20, 20))
 
-        self.results_window = tkscrolled.ScrolledText(self.f1, width=24, height=8, wrap="none")
-        self.results_window.insert(1.0, self.results)
+        self.xscrollbar = tk.Scrollbar(self.f1, orient=tk.HORIZONTAL)
+        self.yscrollbar = tk.Scrollbar(self.f1, orient=tk.VERTICAL)
+        self.results_window = tk.Text(self.f1, wrap=tk.NONE, xscrollcommand=self.xscrollbar.set,
+                                      yscrollcommand=self.yscrollbar.set)
+        self.xscrollbar.config(command=self.results_window.xview)
+        self.yscrollbar.config(command=self.results_window.yview)
 
-        self.results_window.grid(column=0, row=1, columnspan=12, rowspan=8, sticky="nsew")
-        '''
-        self.temp_var = 0
+        self.xscrollbar.grid(column=0, row=8, columnspan=11, sticky=(tk.E+tk.W))
+        self.yscrollbar.grid(column=11, row=1, rowspan=7, sticky=(tk.N+tk.S))
+        self.results_window.grid(column=0, row=1, columnspan=11, rowspan=7)
 
-        self.f1.grid(column=0, row=0, sticky=(tk.N, tk.S, tk.E, tk.W))  # added sticky
-        self.namelbl = ttk.Label(self.f1, text="Simple Adder\nNewline Test")
-        self.value_label = ttk.Label(self.f1, text=self.temp_var, width=10, anchor=tk.CENTER)
-        self.add_field = ttk.Entry(self.f1)
+        self.results_window.insert(tk.END, self.results)
 
-        self.add = ttk.Button(self.f1, text="Add", command=self.add_var, cursor="hand1")
-        self.exit = ttk.Button(self.f1, text="Exit", command=parent.destroy, cursor="hand1")
-
-        self.f1.grid(column=0, row=0, sticky=(tk.N, tk.S, tk.E, tk.W))  # added sticky
-        self.namelbl.grid(column=0, row=0, columnspan=4, sticky=tk.N)  # added sticky, padx
-        self.add_field.grid(column=0, row=1, columnspan=2, sticky=tk.W)  # added sticky, pady, padx
-        self.value_label.grid(column=2, row=1, columnspan=2, sticky=tk.E)
-        self.add.grid(column=0, row=2, columnspan=2, sticky=(tk.S, tk.W))
-        self.exit.grid(column=2, row=2, columnspan=2, sticky=(tk.S, tk.E))
-
-        # added resizing configs
-        self.parent.columnconfigure(0, weight=1)
-        self.parent.rowconfigure(0, weight=1)
-        self.f1.columnconfigure(0, weight=3)
-        self.f1.columnconfigure(1, weight=3)
-        self.f1.columnconfigure(2, weight=3)
-        self.f1.columnconfigure(3, weight=1)
-        self.f1.columnconfigure(4, weight=1)
-        self.f1.rowconfigure(1, weight=1)
-        '''
-
-    def add_var(self):
-        self.temp_var += int(self.add_field.get())
-        self.value_label.configure(text=str(self.temp_var))
-        print(self.temp_var)
+    def update_results_window(self):
+        self.results_window.delete("1.0", tk.END)
+        self.results_window.insert(tk.END, self.results)
         return
 
 
