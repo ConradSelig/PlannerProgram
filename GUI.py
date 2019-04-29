@@ -1,9 +1,16 @@
+import cht
+import copy
+import db_conn
+
 import tkinter as tk
 from tkinter import ttk
+from datetime import datetime
 
 
 class ResizableWindow:
-    def __init__(self, parent):
+    def __init__(self, parent, cht):
+        self.local_cht = cht
+
         self.parent = parent
         self.f1_style = ttk.Style()
         self.f1_style.configure('My.TFrame', background="#F0F0F0")
@@ -19,7 +26,7 @@ class ResizableWindow:
         self.clear_selection = ttk.Button(self.f1, text="Clear Selection", cursor="hand1")
         self.show_cols = ttk.Button(self.f1, text="Show Column Headers", cursor="hand1")
         self.add_row = ttk.Button(self.f1, text="Add New Note", cursor="hand1")
-        self.search = ttk.Button(self.f1, text="Search", cursor="hand1")
+        self.search = ttk.Button(self.f1, text="Search", cursor="hand1", command=self.run_search)
         self.cancel = ttk.Button(self.f1, text="Cancel", cursor="hand1")
 
         # labels
@@ -64,7 +71,7 @@ class ResizableWindow:
         self.xscrollbar = tk.Scrollbar(self.f1, orient=tk.HORIZONTAL)
         self.yscrollbar = tk.Scrollbar(self.f1, orient=tk.VERTICAL)
         self.results_window = tk.Text(self.f1, wrap=tk.NONE, xscrollcommand=self.xscrollbar.set,
-                                      yscrollcommand=self.yscrollbar.set)
+                                      yscrollcommand=self.yscrollbar.set, state=tk.NORMAL)
         self.xscrollbar.config(command=self.results_window.xview)
         self.yscrollbar.config(command=self.results_window.yview)
 
@@ -79,10 +86,52 @@ class ResizableWindow:
         self.results_window.insert(tk.END, self.results)
         return
 
+    def run_search(self):
+        self.results = ""
+        w = 35
+        format_string = '{:>' + str(w) + '}'
+
+        for key in [attr for attr in self.local_cht.get_keys() if "__" not in attr]:
+            self.results += format_string.format(key.title() + ":")
+        self.results += "\n"
+
+        lookup_key = self.search_terms.get()
+        for row in cht.hashing.lookup_hash("__words__", lookup_key, self.local_cht.get_map()):
+            self.results += self.local_cht[row].get_csv_list(w) + "     \n"
+        self.update_results_window()
+        return
+
 
 def main():
+    # define service as a global so it does not have to be passed into so many function definitions
+    global service
+    # get the database, this fills into a header array, a 2D values array, and a service API value.
+    header, values, service = db_conn.get_db_values()
+    local_cht = cht.classes.CHT(header, values)
+
+    # build new and old array, they are identical to start off with. We use this to compare which events changed at
+    # save time to save API calls by only pushing changed events
+
+    print("Starting Hash... (Start Time = ~" + str(datetime.now()) + ")")
+
+    start_time = datetime.now()
+    local_cht.add_rows(values, show_print=False)
+    end_time = datetime.now()
+
+    duration = end_time - start_time
+    print("Hash Complete. (End Time = " + str(end_time) + ")")
+    print("Time hash took to complete: " + str(duration))
+    print("Words Hashed:", len(local_cht.words))
+    big_o, omega, theta = local_cht.get_efficiency()
+    print("Cubic Hash Table Efficiency: ")
+    print("\tO(" + str(big_o) + ") <- Worst")
+    print("\tΩ(" + str(omega) + ") <- Best")
+    print("\tΘ(" + str(round(theta, 2)) + ") <- Average")
+
+    old_local_cht = copy.deepcopy(local_cht)
+
     root = tk.Tk()
-    rw = ResizableWindow(root)
+    rw = ResizableWindow(root, local_cht)
     root.mainloop()
 
 

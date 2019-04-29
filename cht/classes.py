@@ -25,7 +25,7 @@ class CHT:
     def __len__(self):
         return len(self.rows)
 
-    def __dir__(self):
+    def get_keys(self):
         return self.keys
 
     def do_hash(self, show_print=True):
@@ -147,6 +147,15 @@ class Row:
         for attr in [attr for attr in self.attrs if "__" not in attr]:
             values.append(getattr(self, attr))
         return values
+
+    def get_csv_list(self, w):
+        # create the formatting string here, as it cannot be done in-place
+        format_string = '{:>' + str(w) + '}'
+
+        str_vals = []
+        for val in self.get_values():
+            str_vals.append(format_string.format(str(val)))
+        return "".join(str_vals)
 
     def set_id(self, new_id):
         self.id = new_id
