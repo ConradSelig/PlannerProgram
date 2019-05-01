@@ -1,3 +1,4 @@
+import re
 import cht
 import copy
 import db_conn
@@ -27,7 +28,7 @@ class ResizableWindow:
         self.show_cols = ttk.Button(self.f1, text="Show Column Headers", cursor="hand1")
         self.add_row = ttk.Button(self.f1, text="Add New Note", cursor="hand1")
         self.search = ttk.Button(self.f1, text="Search", cursor="hand1", command=self.run_search)
-        self.cancel = ttk.Button(self.f1, text="Cancel", cursor="hand1")
+        self.clear = ttk.Button(self.f1, text="Clear", cursor="hand1", command=self.clear_all)
 
         # labels
         self.lbl_selection_options = ttk.Label(self.f1, text="\tSelection Options:")
@@ -52,7 +53,7 @@ class ResizableWindow:
         self.show_cols.grid(column=8, row=0, columnspan=2, sticky="nsew")
         self.add_row.grid(column=10, row=0, columnspan=2, sticky="nsew")
         self.search.grid(column=12, row=8, columnspan=2, sticky="", padx=(20, 20))
-        self.cancel.grid(column=15, row=8, columnspan=2, sticky="e", padx=(20, 20))
+        self.clear.grid(column=15, row=8, columnspan=2, sticky="e", padx=(20, 20))
 
         # labels
         self.lbl_selection_options.grid(column=12, row=0, columnspan=4, sticky="nsew")
@@ -86,18 +87,46 @@ class ResizableWindow:
         self.results_window.insert(tk.END, self.results)
         return
 
+    def clear_all(self):
+        self.results = "Enter a query request to get results to show here."
+        self.search_terms.delete(0, "end")
+        self.update_results_window()
+
     def run_search(self):
+        local_results = []
+        new_local_results = []
         self.results = ""
+
         w = 35
         format_string = '{:>' + str(w) + '}'
 
+        try:
+            max_results = int(self.options_limit.get())
+        except ValueError:
+            max_results = len(local_results) + 1
+
+        # add header row to results string
         for key in [attr for attr in self.local_cht.get_keys() if "__" not in attr]:
             self.results += format_string.format(key.title() + ":")
         self.results += "\n"
 
-        lookup_key = self.search_terms.get()
-        for row in cht.hashing.lookup_hash("__words__", lookup_key, self.local_cht.get_map()):
-            self.results += self.local_cht[row].get_csv_list(w) + "     \n"
+        lookup_keys = self.search_terms.get()
+        lookup_keys = lookup_keys.split(",")
+
+        for lookup_key in lookup_keys:
+            next_key = []
+            for row in cht.hashing.lookup_hash("__words__", lookup_key, self.local_cht.get_map()):
+                next_key.append(self.local_cht[row].get_csv_list(w) + "     \n")
+            local_results.append(next_key)
+
+
+        for result in local_results:
+            if result not in new_local_results and len(new_local_results) < max_results:
+                new_local_results.append(result)
+
+        for result in new_local_results:
+            self.results += result
+
         self.update_results_window()
         return
 
