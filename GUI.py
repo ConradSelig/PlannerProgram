@@ -37,8 +37,18 @@ class ResizableWindow:
         self.lbl_TEMP = ttk.Label(self.f1, text="THIS IS A PLACEHOLDER FOR\nCOLUMN SELECTION.")
 
         # check boxes
-        self.manual_entry = ttk.Checkbutton(self.f1, text="Select Columns by Hand")
-        self.scan_all = ttk.Checkbutton(self.f1, text="Scan all of the Data")
+        self.manual_entry_value = tk.IntVar()
+        self.manual_entry_value.set(0)
+        self.scan_all_value = tk.IntVar()
+        self.scan_all_value.set(0)
+        self.add_mode_value = tk.IntVar()
+        self.add_mode_value.set(0)
+        self.manual_entry = ttk.Checkbutton(self.f1, text="Select Columns by Hand", cursor="hand1",
+                                            variable=self.manual_entry_value)
+        self.scan_all = ttk.Checkbutton(self.f1, text="Scan all of the Data", cursor="hand1",
+                                        variable=self.scan_all_value)
+        self.add_mode = ttk.Checkbutton(self.f1, text="Use Additive Searching", cursor="hand1",
+                                        variable=self.add_mode_value)
 
         # entry fields
         self.options_limit = ttk.Entry(self.f1)
@@ -52,8 +62,8 @@ class ResizableWindow:
         self.clear_selection.grid(column=6, row=0, columnspan=2, sticky="nsew")
         self.show_cols.grid(column=8, row=0, columnspan=2, sticky="nsew")
         self.add_row.grid(column=10, row=0, columnspan=2, sticky="nsew")
-        self.search.grid(column=12, row=8, columnspan=2, sticky="", padx=(20, 20))
-        self.clear.grid(column=15, row=8, columnspan=2, sticky="e", padx=(20, 20))
+        self.search.grid(column=12, row=9, columnspan=2, sticky="", padx=(20, 20))
+        self.clear.grid(column=15, row=9, columnspan=2, sticky="e", padx=(20, 20))
 
         # labels
         self.lbl_selection_options.grid(column=12, row=0, columnspan=4, sticky="nsew")
@@ -64,10 +74,11 @@ class ResizableWindow:
         # check boxes
         self.manual_entry.grid(column=12, row=1, columnspan=4, sticky="nsew")
         self.scan_all.grid(column=12, row=2, columnspan=4, sticky="nsew")
+        self.add_mode.grid(column=12, row=7, columnspan=4, sticky="nsew")
 
         # entry field
         self.options_limit.grid(column=15, row=5, columnspan=1, sticky="ew", padx=(0, 20))
-        self.search_terms.grid(column=12, row=7, columnspan=4, sticky="nsew", pady=(0, 20), padx=(20, 20))
+        self.search_terms.grid(column=12, row=8, columnspan=4, sticky="nsew", pady=(0, 20), padx=(20, 20))
 
         self.xscrollbar = tk.Scrollbar(self.f1, orient=tk.HORIZONTAL)
         self.yscrollbar = tk.Scrollbar(self.f1, orient=tk.VERTICAL)
@@ -76,9 +87,9 @@ class ResizableWindow:
         self.xscrollbar.config(command=self.results_window.xview)
         self.yscrollbar.config(command=self.results_window.yview)
 
-        self.xscrollbar.grid(column=0, row=8, columnspan=11, sticky=(tk.E+tk.W))
-        self.yscrollbar.grid(column=11, row=1, rowspan=7, sticky=(tk.N+tk.S))
-        self.results_window.grid(column=0, row=1, columnspan=11, rowspan=7)
+        self.xscrollbar.grid(column=0, row=9, columnspan=11, sticky=(tk.E+tk.W))
+        self.yscrollbar.grid(column=11, row=1, rowspan=8, sticky=(tk.N+tk.S))
+        self.results_window.grid(column=0, row=1, columnspan=11, rowspan=8)
 
         self.results_window.insert(tk.END, self.results)
 
@@ -90,6 +101,10 @@ class ResizableWindow:
     def clear_all(self):
         self.results = "Enter a query request to get results to show here."
         self.search_terms.delete(0, "end")
+        self.manual_entry_value.set(0)
+        self.scan_all_value.set(0)
+        self.add_mode_value.set(0)
+
         self.update_results_window()
 
     def run_search(self):
@@ -100,11 +115,6 @@ class ResizableWindow:
         w = 35
         format_string = '{:>' + str(w) + '}'
 
-        try:
-            max_results = int(self.options_limit.get())
-        except ValueError:
-            max_results = len(local_results) + 1
-
         # add header row to results string
         for key in [attr for attr in self.local_cht.get_keys() if "__" not in attr]:
             self.results += format_string.format(key.title() + ":")
@@ -113,19 +123,47 @@ class ResizableWindow:
         lookup_keys = self.search_terms.get()
         lookup_keys = lookup_keys.split(",")
 
-        for lookup_key in lookup_keys:
-            next_key = []
-            for row in cht.hashing.lookup_hash("__words__", lookup_key, self.local_cht.get_map()):
-                next_key.append(self.local_cht[row].get_csv_list(w) + "     \n")
-            local_results.append(next_key)
+        if self.add_mode_value.get() == 1:  # additive search mode
+            for lookup_key in lookup_keys:
+                for row in cht.hashing.lookup_hash("__words__", lookup_key, self.local_cht.get_map()):
+                    local_results.append(self.local_cht[row].get_csv_list(w) + "     \n")
 
+            try:
+                max_results = int(self.options_limit.get())
+            except ValueError:
+                max_results = len(local_results) + 1
 
-        for result in local_results:
-            if result not in new_local_results and len(new_local_results) < max_results:
-                new_local_results.append(result)
+            print(local_results)
+            print(max_results)
 
-        for result in new_local_results:
-            self.results += result
+            for result in local_results:
+                if result not in new_local_results and len(new_local_results) < max_results:
+                    new_local_results.append(result)
+
+            for result in new_local_results:
+                self.results += result
+
+        else:  # intersective search mode
+
+            for lookup_key in lookup_keys:
+                next_keys_vals = []
+                for row in cht.hashing.lookup_hash("__words__", lookup_key, self.local_cht.get_map()):
+                    next_keys_vals.append(self.local_cht[row].get_csv_list(w) + "     \n")
+                local_results.append(next_keys_vals)
+
+            new_local_results = []
+            for results in local_results[0]:
+                for check_row in local_results[1:]:
+                    if results not in check_row:
+                        in_all = False
+                new_local_results.append(results)
+
+            for index, result in enumerate(new_local_results):
+                if str.isdigit(self.options_limit.get()):
+                    if index < self.options_limit.get():
+                        self.results += result
+                else:
+                    self.results += result
 
         self.update_results_window()
         return
