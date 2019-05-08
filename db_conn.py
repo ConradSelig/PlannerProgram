@@ -12,8 +12,6 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SPREADSHEET_ID = '1n4nkoIfEo2_jdrAfykvhABOKlznIOft_3MZXx8ntXM4'
 DATA_RANGE = 'Sheet1!$A$1:$YY'
 
-service = ""
-
 
 def get_db_values():
 
@@ -47,7 +45,7 @@ def get_db_values():
     return values[0], values[1:], service
 
 
-def write_cells(db_range, values):
+def write_cells(db_range, values, service):
 
     # body is a dictionary used by the Google Sheets API and must be formatted like this
     body = {
@@ -63,7 +61,7 @@ def write_cells(db_range, values):
     return
 
 
-def write_event(event_index, event):
+def write_event(event_index, event, service):
     # set the creation date of the event being writen to the string version of the creation date
     setattr(event, "creation_date", str(getattr(event, "creation_date")))
     # body is a dictionary used by the Google Sheets API and must be formatted like this
@@ -81,7 +79,7 @@ def write_event(event_index, event):
     return
 
 
-def update_db(local_cht, old_local_cht):
+def update_db(local_cht, old_local_cht, service):
     old_local_cht_row = ""
     # for each event in events (with index/id included)
     for index, event in enumerate(local_cht.rows):
@@ -90,10 +88,10 @@ def update_db(local_cht, old_local_cht):
             # if the new version of the event is not the same as the old version
             if not event.compare(old_local_cht.rows[index]):
                 # write that event
-                write_event(index, event)
+                write_event(index, event, service)
         # index error occurs when some fields are out of place
         except IndexError or AttributeError:
             # write the event to the database to avoid data-loss
-            write_event(index, event)
+            write_event(index, event, service)
 
     return

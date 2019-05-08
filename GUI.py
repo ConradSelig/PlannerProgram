@@ -145,19 +145,27 @@ class ResizableWindow:
 
         else:  # intersective search mode
 
+            # block appends all results from each key into a 2D list
             for lookup_key in lookup_keys:
                 next_keys_vals = []
                 for row in cht.hashing.lookup_hash("__words__", lookup_key, self.local_cht.get_map()):
                     next_keys_vals.append(self.local_cht[row].get_csv_list(w) + "     \n")
                 local_results.append(next_keys_vals)
 
+            # block checks to make sure if each result is in all result rows
+            check_list = []
             new_local_results = []
-            for results in local_results[0]:
-                for check_row in local_results[1:]:
-                    if results not in check_row:
-                        in_all = False
-                new_local_results.append(results)
+            for result in local_results[0]:
+                check_list = []
+                for row in local_results[1:]:
+                    check_list.append(False)
+                    for item in row:
+                        if item == result:
+                            check_list[-1] = True
+                if all(check_list):
+                    new_local_results.append(result)
 
+            # block only allows for the options_limit (or all if no limit)
             for index, result in enumerate(new_local_results):
                 if str.isdigit(self.options_limit.get()):
                     if index < self.options_limit.get():

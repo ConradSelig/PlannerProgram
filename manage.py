@@ -24,8 +24,6 @@ def get_new_row_vals(attrs):
 
 
 def main():
-    # define service as a global so it does not have to be passed into so many function definitions
-    global service
     # get the database, this fills into a header array, a 2D values array, and a service API value.
     header, values, service = db_conn.get_db_values()
     local_cht = cht.classes.CHT(header, values)
@@ -60,7 +58,7 @@ def main():
             lookup_key = "__words__"
         if lookup_key == "add":
             # local_cht.add_row(get_new_row_vals(local_cht.keys))
-            local_cht.add_row(["Custom Title", "Data Structures", "Some New Values", "Totally Original Words", "", "", "", "", "", "42", "Placer", "", "", "", "0", "", "T", "F", ""])
+            local_cht.add_row(get_new_row_vals(local_cht.keys))
         else:
             break
     lookup_string = input("Enter Row Title: ")
@@ -77,7 +75,7 @@ def main():
                 lookup_key = "__words__"
             if lookup_key == "add":
                 # local_cht.add_row(get_new_row_vals(local_cht.keys))
-                local_cht.add_row(["Custom Title", "Data Structures", "Some New Values", "Totally Original Words", "", "", "", "", "", "42", "Placer", "", "", "", "0", "", "T", "F", ""])
+                local_cht.add_row(get_new_row_vals(local_cht.keys))
             else:
                 break
         lookup_string = input("Enter Row Title: ")
@@ -106,7 +104,7 @@ def main():
 
     local_cht.do_hash()
 
-    db_conn.update_db(local_cht, old_local_cht)
+    db_conn.update_db(local_cht, old_local_cht, service)
     return
 
 

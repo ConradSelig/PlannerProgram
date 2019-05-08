@@ -19,6 +19,8 @@ def print_table_data(CHT, w):
             # for each column in that events data
             for col in row:
                 # output with the same formatting as the header row
+                if len(col) > w-5:
+                    col = col[:w-5] + "..."
                 print(format_string.format(col), end="")
             # output newline
             print("")

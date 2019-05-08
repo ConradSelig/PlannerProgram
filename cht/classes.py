@@ -154,7 +154,10 @@ class Row:
 
         str_vals = []
         for val in self.get_values():
-            str_vals.append(format_string.format(str(val)))
+            val = str(val)
+            if len(val) > w - 10:
+                val = val[:w - 10] + "..."
+            str_vals.append(format_string.format(val))
         return "".join(str_vals)
 
     def set_id(self, new_id):
