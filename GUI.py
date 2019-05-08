@@ -8,33 +8,125 @@ from tkinter import ttk
 from datetime import datetime
 
 
-class ResizableWindow:
+class EventWindow(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+
+        self.event_frame_style = ttk.Style()
+        self.event_frame_style.configure('My.TFrame', background="#F0F0F0")
+        self.event_frame = ttk.Frame(self.parent, style='My.TFrame')
+        self.event_frame.grid(column=0, row=0, sticky=(tk.N, tk.S, tk.E, tk.W))
+
+        self.lbl_title = ttk.Label(self.event_frame, text="Title:")
+        self.lbl_subtitle = ttk.Label(self.event_frame, text="Subtitle:")
+        self.lbl_description = ttk.Label(self.event_frame, text="Description:")
+        self.lbl_text = ttk.Label(self.event_frame, text="Text:")
+        self.lbl_event_date = ttk.Label(self.event_frame, text="Event Date:")
+        self.lbl_creation_date = ttk.Label(self.event_frame, text="Event Creation Date:")
+        self.lbl_last_modified_date = ttk.Label(self.event_frame, text="Last Modified Date:")
+        self.lbl_due_date = ttk.Label(self.event_frame, text="Due Date:")
+        self.lbl_time = ttk.Label(self.event_frame, text="Time:")
+        self.lbl_duration = ttk.Label(self.event_frame, text="Duration:")
+        self.lbl_location = ttk.Label(self.event_frame, text="Location:")
+        self.lbl_attachments = ttk.Label(self.event_frame, text="Attachments:")
+        self.lbl_path = ttk.Label(self.event_frame, text="Path:")
+        self.lbl_contacts = ttk.Label(self.event_frame, text="Contacts:")
+        self.lbl_number = ttk.Label(self.event_frame, text="Number:")
+        self.lbl_tags = ttk.Label(self.event_frame, text="Tags:")
+        self.lbl_todo = ttk.Label(self.event_frame, text="Todo:")
+        self.lbl_complete = ttk.Label(self.event_frame, text="Complete:")
+        self.lbl_id = ttk.Label(self.event_frame, text="ID:")
+
+        self.lbl_title.grid(column=0, row=0, sticky="nsew")
+        self.lbl_subtitle.grid(column=0, row=1, sticky="nsew")
+        self.lbl_description.grid(column=0, row=2, sticky="nsew")
+        self.lbl_text.grid(column=0, row=3, sticky="nsew")
+        self.lbl_event_date.grid(column=0, row=4, sticky="nsew")
+        self.lbl_creation_date.grid(column=0, row=5, sticky="nsew")
+        self.lbl_last_modified_date.grid(column=0, row=6, sticky="nsew")
+        self.lbl_due_date.grid(column=0, row=7, sticky="nsew")
+        self.lbl_time.grid(column=0, row=8, sticky="nsew")
+        self.lbl_duration.grid(column=0, row=9, sticky="nsew")
+        self.lbl_location.grid(column=0, row=10, sticky="nsew")
+        self.lbl_attachments.grid(column=0, row=11, sticky="nsew")
+        self.lbl_path.grid(column=0, row=12, sticky="nsew")
+        self.lbl_contacts.grid(column=0, row=13, sticky="nsew")
+        self.lbl_number.grid(column=0, row=14, sticky="nsew")
+        self.lbl_tags.grid(column=0, row=15, sticky="nsew")
+        self.lbl_todo.grid(column=0, row=16, sticky="nsew")
+        self.lbl_complete.grid(column=0, row=17, sticky="nsew")
+        self.lbl_id.grid(column=0, row=18, sticky="nsew")
+
+        # event window text windows
+        self.txt_title = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_subtitle = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_description = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_text = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_creation_date = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_event_date = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_last_modified_date = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_due_date = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_time = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_duration = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_location = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_attachments = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_path = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_contacts = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_number = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_tags = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_todo = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_complete = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+        self.txt_id = tk.Text(self.event_frame, wrap=tk.WORD, state=tk.NORMAL)
+
+        self.txt_title.grid(column=1, row=0, sticky="nsew")
+        self.txt_subtitle.grid(column=1, row=1, sticky="nsew")
+        self.txt_description.grid(column=1, row=2, sticky="nsew")
+        self.txt_text.grid(column=1, row=3, sticky="nsew")
+        self.txt_creation_date.grid(column=1, row=4, sticky="nsew")
+        self.txt_event_date.grid(column=1, row=5, sticky="nsew")
+        self.txt_last_modified_date.grid(column=1, row=6, sticky="nsew")
+        self.txt_due_date.grid(column=1, row=7, sticky="nsew")
+        self.txt_time.grid(column=1, row=8, sticky="nsew")
+        self.txt_duration.grid(column=1, row=9, sticky="nsew")
+        self.txt_location.grid(column=1, row=10, sticky="nsew")
+        self.txt_attachments.grid(column=1, row=11, sticky="nsew")
+        self.txt_path.grid(column=1, row=12, sticky="nsew")
+        self.txt_contacts.grid(column=1, row=13, sticky="nsew")
+        self.txt_number.grid(column=1, row=14, sticky="nsew")
+        self.txt_tags.grid(column=1, row=15, sticky="nsew")
+        self.txt_todo.grid(column=1, row=16, sticky="nsew")
+        self.txt_complete.grid(column=1, row=17, sticky="nsew")
+        self.txt_id.grid(column=1, row=18, sticky="nsew")
+
+
+class MainApp:
     def __init__(self, parent, cht):
         self.local_cht = cht
 
         self.parent = parent
-        self.f1_style = ttk.Style()
-        self.f1_style.configure('My.TFrame', background="#F0F0F0")
-        self.f1 = ttk.Frame(self.parent, style='My.TFrame')
-        self.f1.grid(column=0, row=0, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.main_frame_style = ttk.Style()
+        self.main_frame_style.configure('My.TFrame', background="#F0F0F0")
+        self.main_frame = ttk.Frame(self.parent, style='My.TFrame')
+        self.main_frame.grid(column=0, row=0, sticky=(tk.N, tk.S, tk.E, tk.W))
 
         self.results = "Enter a query request to get results to show here."
 
         # buttons
-        self.reload_db = ttk.Button(self.f1, text="Reload Database", cursor="hand1")
-        self.save_db = ttk.Button(self.f1, text="Save Database", cursor="hand1")
-        self.export_results = ttk.Button(self.f1, text="Export Results", cursor="hand1")
-        self.clear_selection = ttk.Button(self.f1, text="Clear Selection", cursor="hand1")
-        self.show_cols = ttk.Button(self.f1, text="Show Column Headers", cursor="hand1")
-        self.add_row = ttk.Button(self.f1, text="Add New Note", cursor="hand1")
-        self.search = ttk.Button(self.f1, text="Search", cursor="hand1", command=self.run_search)
-        self.clear = ttk.Button(self.f1, text="Clear", cursor="hand1", command=self.clear_all)
+        self.reload_db = ttk.Button(self.main_frame, text="Reload Database", cursor="hand1")
+        self.save_db = ttk.Button(self.main_frame, text="Save Database", cursor="hand1")
+        self.export_results = ttk.Button(self.main_frame, text="Export Results", cursor="hand1")
+        self.clear_selection = ttk.Button(self.main_frame, text="Clear Selection", cursor="hand1")
+        self.show_cols = ttk.Button(self.main_frame, text="Show Column Headers", cursor="hand1")
+        self.add_row = ttk.Button(self.main_frame, text="Add New Note", cursor="hand1")
+        self.search = ttk.Button(self.main_frame, text="Search", cursor="hand1", command=self.run_search)
+        self.clear = ttk.Button(self.main_frame, text="Clear", cursor="hand1", command=self.clear_all)
 
         # labels
-        self.lbl_selection_options = ttk.Label(self.f1, text="\tSelection Options:")
-        self.lbl_max_results = ttk.Label(self.f1, text="Max Results:")
-        self.lbl_search_terms = ttk.Label(self.f1, text="Search Terms:")
-        self.lbl_TEMP = ttk.Label(self.f1, text="THIS IS A PLACEHOLDER FOR\nCOLUMN SELECTION.")
+        self.lbl_selection_options = ttk.Label(self.main_frame, text="\tSelection Options:")
+        self.lbl_max_results = ttk.Label(self.main_frame, text="Max Results:")
+        self.lbl_search_terms = ttk.Label(self.main_frame, text="Search Terms:")
+        self.lbl_TEMP = ttk.Label(self.main_frame, text="THIS IS A PLACEHOLDER FOR\nCOLUMN SELECTION.")
 
         # check boxes
         self.manual_entry_value = tk.IntVar()
@@ -43,16 +135,16 @@ class ResizableWindow:
         self.scan_all_value.set(0)
         self.add_mode_value = tk.IntVar()
         self.add_mode_value.set(0)
-        self.manual_entry = ttk.Checkbutton(self.f1, text="Select Columns by Hand", cursor="hand1",
+        self.manual_entry = ttk.Checkbutton(self.main_frame, text="Select Columns by Hand", cursor="hand1",
                                             variable=self.manual_entry_value)
-        self.scan_all = ttk.Checkbutton(self.f1, text="Scan all of the Data", cursor="hand1",
+        self.scan_all = ttk.Checkbutton(self.main_frame, text="Scan all of the Data", cursor="hand1",
                                         variable=self.scan_all_value)
-        self.add_mode = ttk.Checkbutton(self.f1, text="Use Additive Searching", cursor="hand1",
+        self.add_mode = ttk.Checkbutton(self.main_frame, text="Use Additive Searching", cursor="hand1",
                                         variable=self.add_mode_value)
 
         # entry fields
-        self.options_limit = ttk.Entry(self.f1)
-        self.search_terms = ttk.Entry(self.f1)
+        self.options_limit = ttk.Entry(self.main_frame)
+        self.search_terms = ttk.Entry(self.main_frame)
 
         # grid building
         # buttons
@@ -80,9 +172,10 @@ class ResizableWindow:
         self.options_limit.grid(column=15, row=5, columnspan=1, sticky="ew", padx=(0, 20))
         self.search_terms.grid(column=12, row=8, columnspan=4, sticky="nsew", pady=(0, 20), padx=(20, 20))
 
-        self.xscrollbar = tk.Scrollbar(self.f1, orient=tk.HORIZONTAL)
-        self.yscrollbar = tk.Scrollbar(self.f1, orient=tk.VERTICAL)
-        self.results_window = tk.Text(self.f1, wrap=tk.NONE, xscrollcommand=self.xscrollbar.set,
+        # main text window
+        self.xscrollbar = tk.Scrollbar(self.main_frame, orient=tk.HORIZONTAL)
+        self.yscrollbar = tk.Scrollbar(self.main_frame, orient=tk.VERTICAL)
+        self.results_window = tk.Text(self.main_frame, wrap=tk.NONE, xscrollcommand=self.xscrollbar.set,
                                       yscrollcommand=self.yscrollbar.set, state=tk.NORMAL)
         self.xscrollbar.config(command=self.results_window.xview)
         self.yscrollbar.config(command=self.results_window.yview)
@@ -207,7 +300,7 @@ def main():
     old_local_cht = copy.deepcopy(local_cht)
 
     root = tk.Tk()
-    rw = ResizableWindow(root, local_cht)
+    rw = MainApp(root, local_cht)
     root.mainloop()
 
 
