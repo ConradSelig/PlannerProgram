@@ -110,6 +110,7 @@ class ResizableWindow:
     def run_search(self):
         local_results = []
         new_local_results = []
+        final_results = []
         self.results = ""
 
         w = 35
@@ -133,15 +134,11 @@ class ResizableWindow:
             except ValueError:
                 max_results = len(local_results) + 1
 
-            print(local_results)
-            print(max_results)
-
             for result in local_results:
                 if result not in new_local_results and len(new_local_results) < max_results:
                     new_local_results.append(result)
 
-            for result in new_local_results:
-                self.results += result
+            final_results = new_local_results
 
         else:  # intersective search mode
 
@@ -169,9 +166,13 @@ class ResizableWindow:
             for index, result in enumerate(new_local_results):
                 if str.isdigit(self.options_limit.get()):
                     if index < self.options_limit.get():
-                        self.results += result
+                        final_results.append(result)
                 else:
-                    self.results += result
+                    final_results.append(result)
+
+        final_results = list(set(final_results))
+        for final_result in final_results:
+            self.results += final_result
 
         self.update_results_window()
         return

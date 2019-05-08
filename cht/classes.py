@@ -86,6 +86,9 @@ class CHT:
         except ZeroDivisionError:
             theta = 0
 
+        if omega == 0:
+            omega = 1
+
         return big_o, omega, theta
 
 
